@@ -90,6 +90,7 @@ public class ConversationActivity extends XmppActivity
 	public static final int ATTACHMENT_CHOICE_RECORD_VOICE = 0x0304;
 	public static final int ATTACHMENT_CHOICE_LOCATION = 0x0305;
 	public static final int ATTACHMENT_CHOICE_INVALID = 0x0306;
+	public static final int ATTACHMENT_CHOICE_TAKE_VIDEO = 0x0307;
 	private static final String STATE_OPEN_CONVERSATION = "state_open_conversation";
 	private static final String STATE_PANEL_OPEN = "state_panel_open";
 	private static final String STATE_PENDING_URI = "state_pending_uri";
@@ -452,6 +453,13 @@ public class ConversationActivity extends XmppActivity
 						mPendingImageUris.clear();
 						mPendingImageUris.add(uri);
 						break;
+					case ATTACHMENT_CHOICE_TAKE_VIDEO:
+						Uri vuri = xmppConnectionService.getFileBackend().getTakeVideoUri();
+						intent.setAction(MediaStore.ACTION_VIDEO_CAPTURE);
+						intent.putExtra(MediaStore.EXTRA_OUTPUT, vuri);
+						mPendingImageUris.clear();
+						mPendingImageUris.add(vuri);
+						break;
 					case ATTACHMENT_CHOICE_CHOOSE_FILE:
 						chooser = true;
 						intent.setType("*/*");
@@ -514,6 +522,9 @@ public class ConversationActivity extends XmppActivity
 				break;
 			case ATTACHMENT_CHOICE_TAKE_PHOTO:
 				getPreferences().edit().putString("recently_used_quick_action", "photo").apply();
+				break;
+			case ATTACHMENT_CHOICE_TAKE_VIDEO:
+				getPreferences().edit().putString("recently_used_quick_action", "video").apply();
 				break;
 			case ATTACHMENT_CHOICE_CHOOSE_IMAGE:
 				getPreferences().edit().putString("recently_used_quick_action", "picture").apply();
@@ -745,6 +756,9 @@ public class ConversationActivity extends XmppActivity
 						break;
 					case R.id.attach_take_picture:
 						attachFile(ATTACHMENT_CHOICE_TAKE_PHOTO);
+						break;
+					case R.id.attach_take_video:
+						attachFile(ATTACHMENT_CHOICE_TAKE_VIDEO);
 						break;
 					case R.id.attach_choose_file:
 						attachFile(ATTACHMENT_CHOICE_CHOOSE_FILE);
@@ -1336,6 +1350,19 @@ public class ConversationActivity extends XmppActivity
 					selectPresence(c, callback);
 				}
 			} else if (requestCode == ATTACHMENT_CHOICE_TAKE_PHOTO) {
+				if (mPendingImageUris.size() == 1) {
+					Uri uri = mPendingImageUris.get(0);
+					if (xmppConnectionServiceBound) {
+						attachImageToConversation(getSelectedConversation(), uri);
+						mPendingImageUris.clear();
+					}
+					Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+					intent.setData(uri);
+					sendBroadcast(intent);
+				} else {
+					mPendingImageUris.clear();
+				}
+			} else if (requestCode == ATTACHMENT_CHOICE_TAKE_VIDEO) {
 				if (mPendingImageUris.size() == 1) {
 					Uri uri = mPendingImageUris.get(0);
 					if (xmppConnectionServiceBound) {
