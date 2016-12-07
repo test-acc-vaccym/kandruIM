@@ -138,7 +138,7 @@
             android:summary="@string/pref_use_larger_font_summary"
             android:title="@string/pref_use_larger_font"/>
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="send_button_status"
             android:summary="@string/pref_use_send_button_to_indicate_status_summary"
             android:title="@string/pref_use_send_button_to_indicate_status"/>
@@ -151,7 +151,7 @@
             android:summary="@string/pref_quick_action_summary"
             android:title="@string/pref_quick_action"/>
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="show_dynamic_tags"
             android:summary="@string/pref_show_dynamic_tags_summary"
             android:title="@string/pref_show_dynamic_tags"/>
@@ -262,7 +262,7 @@
                     android:summary="@string/pref_autojoin_summary"
                     />
                 <CheckBoxPreference
-                    android:defaultValue="false"
+                    android:defaultValue="true"
                     android:key="indicate_received"
                     android:summary="@string/pref_use_indicate_received_summary"
                     android:title="@string/pref_use_indicate_received"/>
