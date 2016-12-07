@@ -205,7 +205,7 @@
   <string name="try_again">حاول مرة أخرى</string>
   <string name="finish">انهاء</string>
   <string name="verified">تأكيد!</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">احتفظ بالتطبيق يعمل في المقدمة</string>
   <string name="pref_keep_foreground_service_summary">منع نظام التشغيل من انهاء اتصالك</string>
   <string name="choose_file">اختيار ملف</string>

@@ -359,7 +359,7 @@
   <string name="verified">Überprüft!</string>
   <string name="smp_requested">Kontakt fordert eine Überprüfung an</string>
   <string name="no_otr_session_found">Keine gültige OTR-Sitzung gefunden!</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">Dienst im Vordergrund ausführen</string>
   <string name="pref_keep_foreground_service_summary">Verhindert, dass Android Conversations beendet und die Verbindung unterbricht</string>
   <string name="pref_export_logs">Nachrichtenverlauf exportieren</string>
@@ -597,8 +597,8 @@
   <string name="security_error_invalid_file_access">Sicherheitsfehler: Dateizugriff nicht erlaubt</string>
   <string name="no_application_to_share_uri">Keine Anwendung zum Teilen der URI gefunden</string>
   <string name="share_uri_with">Teile URI mit…</string>
-  <string name="welcome_text">XMPP ist ein providerunabhängiges Protokoll. Du kannst diesen Client mit jedem beliebigen XMPP-Server benutzen.\nUm es dir leicht zu machen haben wir die Möglichkeit geschaffen, ein Konto auf conversations.im¹ anzulegen. Dieser Provider ist besonders gut für Conversations geeignet. </string>
-  <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf conversations.im.¹\nWenn du conversations.im als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
+  <string name="welcome_text">XMPP ist ein providerunabhängiges Protokoll. Du kannst diesen Client mit jedem beliebigen XMPP-Server benutzen.\nUm es dir leicht zu machen haben wir die Möglichkeit geschaffen, ein Konto auf kandru.de¹ anzulegen. Dieser Provider ist besonders gut für Conversations geeignet. </string>
+  <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf kandru.de.¹\nWenn du kandru.de als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
   <string name="your_full_jid_will_be">Deine vollständige Jabber ID lautet: %s</string>
   <string name="create_account">Konto erstellen</string>
   <string name="use_own_provider">Nutze eigenen Provider</string>

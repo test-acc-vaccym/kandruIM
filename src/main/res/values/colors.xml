@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="primary500">#ff259b24</color>
-	<color name="primary700">#ff0a7e07</color>
-	<color name="primary800">#ff026100</color>
-	<color name="primary900">#ff024500</color>
+	<color name="primary500">#ffff9800</color>
+	<color name="primary700">#ffd68000</color>
+	<color name="primary800">#ffcc7a00</color>
+	<color name="primary900">#ffb36b00</color>
 	<color name="accent">#ff0091ea</color>
 	<color name="black87">#de000000</color>
 	<color name="black54">#8a000000</color>
@@ -20,6 +20,6 @@
 	<color name="red500">#fff44336</color>
 	<color name="red800">#ffc62828</color>
 	<color name="orange500">#ffff9800</color>
-	<color name="green500">#ff259b24</color>
+	<color name="green500">#ffff9800</color>
 	<color name="bubble">#ff4b9b4a</color>
 </resources>

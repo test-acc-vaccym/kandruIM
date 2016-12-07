@@ -331,7 +331,7 @@
   <string name="verified">검증 완료 </string>
   <string name="smp_requested">연락처가 SMP 검증을 요구했습니다 </string>
   <string name="no_otr_session_found">올바른 OTR 세션이 발견되지 않았습니다 </string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">포어그라운드에서 서비스 유지 </string>
   <string name="pref_keep_foreground_service_summary">운영체제가 접속을 해제하지 못하도록 예방합니다 </string>
   <string name="notification_export_logs_title">기록을 SD 카드에 쓰는 중</string>

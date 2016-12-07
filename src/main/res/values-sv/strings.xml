@@ -359,7 +359,7 @@
   <string name="verified">Verifierad</string>
   <string name="smp_requested">Kontakt begärde SMP-verifikation</string>
   <string name="no_otr_session_found">Ingen giltig OTR-session kunde hittas!</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">Håll tjänst i förgrunden</string>
   <string name="pref_keep_foreground_service_summary">Förehindrar operativsystemet att ta ner uppkopplingen</string>
   <string name="pref_export_logs">Exportera historik</string>
@@ -597,8 +597,8 @@
   <string name="security_error_invalid_file_access">Säkerhetsfel: Ogiltig filaccess</string>
   <string name="no_application_to_share_uri">Ingen applikation kunde hittas för att dela URI</string>
   <string name="share_uri_with">Dela URI med...</string>
-  <string name="welcome_text">XMPP är ett leverantörsoberoende protokoll. Du kan använda denna klient med vilken XMPP server du vill.\nFör din bekvämlighet har vi gjort det enkelt att skapa ett konto hos conversations.im¹; en leverantör speciellt anpassad för att användas med Conversations.</string>
-  <string name="magic_create_text">Du kommer nu att få hjälp med att skapa ett konto på conversations.im.¹\nNär conversations.im väljs som leverantör kommer du kunna kommunicera med användare hos andra leverantörer genom att ge dem ditt Jabber ID.</string>
+  <string name="welcome_text">XMPP är ett leverantörsoberoende protokoll. Du kan använda denna klient med vilken XMPP server du vill.\nFör din bekvämlighet har vi gjort det enkelt att skapa ett konto hos kandru.de¹; en leverantör speciellt anpassad för att användas med Conversations.</string>
+  <string name="magic_create_text">Du kommer nu att få hjälp med att skapa ett konto på kandru.de.¹\nNär kandru.de väljs som leverantör kommer du kunna kommunicera med användare hos andra leverantörer genom att ge dem ditt Jabber ID.</string>
   <string name="your_full_jid_will_be">Ditt jabber ID blir: %s</string>
   <string name="create_account">Skapa konto</string>
   <string name="use_own_provider">Använd min egen leverantör</string>

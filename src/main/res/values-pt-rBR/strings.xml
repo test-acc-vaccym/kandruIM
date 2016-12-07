@@ -359,7 +359,7 @@
   <string name="verified">Verificado!</string>
   <string name="smp_requested">O contato solicitou uma verificação SMP</string>
   <string name="no_otr_session_found">Não foi encontrada nenhuma sessão OTR válida!</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">Manter o serviço em segundo plano</string>
   <string name="pref_keep_foreground_service_summary">Impede que o sistema operacional encerre sua conexão.</string>
   <string name="pref_export_logs">Exportar histórico</string>
@@ -597,8 +597,8 @@
   <string name="security_error_invalid_file_access">Erro de segurança: Acesso inválido ao arquivo</string>
   <string name="no_application_to_share_uri">Não foi encontrada nenhuma aplicação para compartilhar a URI</string>
   <string name="share_uri_with">Compartilhar a URI com...</string>
-  <string name="welcome_text">O XMPP é um protocolo independente de provedor. Você pode usar esse cliente com qualquer servidor que você escolher.\nEntretanto, para sua conveniência, nós simplificamos o processo de criação de uma conta em conversations.im¹, um provedor especialmente configurado para usar com o Conversations.</string>
-  <string name="magic_create_text">Nós guiaremos você ao longo do processo de criar uma conta em conversations.im.¹\nAo usar esse provedor você também poderá se comunicar com usuários de outros provedores. Basta fornecê-los a sua identificação Jabber completa.</string>
+  <string name="welcome_text">O XMPP é um protocolo independente de provedor. Você pode usar esse cliente com qualquer servidor que você escolher.\nEntretanto, para sua conveniência, nós simplificamos o processo de criação de uma conta em kandru.de¹, um provedor especialmente configurado para usar com o Conversations.</string>
+  <string name="magic_create_text">Nós guiaremos você ao longo do processo de criar uma conta em kandru.de.¹\nAo usar esse provedor você também poderá se comunicar com usuários de outros provedores. Basta fornecê-los a sua identificação Jabber completa.</string>
   <string name="your_full_jid_will_be">Sua ID Jabber será: %s</string>
   <string name="create_account">Criar conta</string>
   <string name="use_own_provider">Usar meu próprio provedor</string>

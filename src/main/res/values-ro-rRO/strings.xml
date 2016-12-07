@@ -359,7 +359,7 @@
   <string name="verified">Verificat!</string>
   <string name="smp_requested">Contactul a cerut verificare SMP</string>
   <string name="no_otr_session_found">Nu s-a gasit nici o sesiune OTR valida</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">Pastreaza serviciul activ in prim plan</string>
   <string name="pref_keep_foreground_service_summary">Previne inchiderea conexiunii de catre sistemul de operare.</string>
   <string name="pref_export_logs">Exporta istoric</string>
@@ -601,8 +601,8 @@ Emitent</string>
   <string name="security_error_invalid_file_access">Eroare de securitate.: Acces fisier invalid</string>
   <string name="no_application_to_share_uri">Nu s-a gasit nici o aplicatie care sa partajeze URI</string>
   <string name="share_uri_with">Partajeaza URI cu...</string>
-  <string name="welcome_text">XMPP este un protocol independent ce nu depinde de un anume furnizor. Aveți posibilitatea sa utilizati acest client cu orice server XMPP doriti.\nTotusi pentru confortul dumneavoastra am facilitat crearea unui cont pe conversations.im¹; un furnizor potrivit pentru utilizarea cu aplicatia Conversations.</string>
-  <string name="magic_create_text">Va vom ghida prin procesul de creare al unui cont pe conversations.im.¹\nCand alegeti conversations.im ca furnizor veti putea comunica cu utilizatorii altor furnizori oferindu-le ID-ul dumneavoastra Jabber.</string>
+  <string name="welcome_text">XMPP este un protocol independent ce nu depinde de un anume furnizor. Aveți posibilitatea sa utilizati acest client cu orice server XMPP doriti.\nTotusi pentru confortul dumneavoastra am facilitat crearea unui cont pe kandru.de¹; un furnizor potrivit pentru utilizarea cu aplicatia Conversations.</string>
+  <string name="magic_create_text">Va vom ghida prin procesul de creare al unui cont pe kandru.de.¹\nCand alegeti kandru.de ca furnizor veti putea comunica cu utilizatorii altor furnizori oferindu-le ID-ul dumneavoastra Jabber.</string>
   <string name="your_full_jid_will_be">ID-ul Jabber va fi: %s</string>
   <string name="create_account">Creeaza cont</string>
   <string name="use_own_provider">Foloseste furnizorul meu</string>

@@ -355,7 +355,7 @@
   <string name="verified">驗證通過！</string>
   <string name="smp_requested">連絡人請求 SMP 驗證</string>
   <string name="no_otr_session_found">沒有找到 OTR 會話</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">保持前臺服務</string>
   <string name="pref_keep_foreground_service_summary">防止作業系統中斷你的連接</string>
   <string name="pref_export_logs">匯出歷史記錄</string>
@@ -590,8 +590,8 @@
   <string name="security_error_invalid_file_access">安全錯誤：檔存取權限無效</string>
   <string name="no_application_to_share_uri">沒有可以分享此連結的應用</string>
   <string name="share_uri_with">分享連結...</string>
-  <string name="welcome_text">XMPP 是一個獨立協議的提供者。你可以用這個用戶端連接任何你選擇的 XMPP 伺服器。\n為了讓你更便捷，我們讓你可以在 conversations.im¹ 上方便的註冊帳號；特意為使用 Conversations 的人準備。</string>
-  <string name="magic_create_text">我們將會引導你完成在 conversations.im¹ 上註冊帳號的過程。\n當獲得了 conversations.im 提供的帳號以後，你可以通過添加使用其他提供商的好友的完整 Jabber ID 來與他們聯絡。</string>
+  <string name="welcome_text">XMPP 是一個獨立協議的提供者。你可以用這個用戶端連接任何你選擇的 XMPP 伺服器。\n為了讓你更便捷，我們讓你可以在 kandru.de¹ 上方便的註冊帳號；特意為使用 Conversations 的人準備。</string>
+  <string name="magic_create_text">我們將會引導你完成在 kandru.de¹ 上註冊帳號的過程。\n當獲得了 kandru.de 提供的帳號以後，你可以通過添加使用其他提供商的好友的完整 Jabber ID 來與他們聯絡。</string>
   <string name="your_full_jid_will_be">您完整的 Jabble ID 是：%s </string>
   <string name="create_account">創建帳戶</string>
   <string name="use_own_provider">使用我自己的服務端</string>

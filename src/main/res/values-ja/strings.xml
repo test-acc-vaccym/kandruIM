@@ -359,7 +359,7 @@
   <string name="verified">検証しました!</string>
   <string name="smp_requested">連絡先が SMP 検証を要求しました</string>
   <string name="no_otr_session_found">有効な OTR セッションが見つかりません!</string>
-  <string name="conversations_foreground_service">Conversations</string>
+  <string name="conversations_foreground_service">kandruIM</string>
   <string name="pref_keep_foreground_service">サービスをフォアグラウンドに保持</string>
   <string name="pref_keep_foreground_service_summary">オペレーティングシステムが接続を切断するのを防止します</string>
   <string name="pref_export_logs">履歴をエクスポート</string>
@@ -594,8 +594,8 @@
   <string name="security_error_invalid_file_access">セキュリティエラー: 不正なファイルアクセス</string>
   <string name="no_application_to_share_uri">URI を共有するアプリケーションが見つかりません</string>
   <string name="share_uri_with">…で URI を共有</string>
-  <string name="welcome_text">XMPPはプロバイダーに依存しないプロトコルです。これまであなたが選択したどのXMPPサーバーでも、このクライアントを使用することができます。\nしかしあなたが便利なように、Conversationsで使用するのに最適なプロバイダーconversations.im¹で簡単にアカウントを作成することができるようにしています。</string>
-  <string name="magic_create_text">conversations.imのアカウントを作成する手順をガイドします。\nプロバイダーとしてconversations.imを選択すると、あなたの完全なJabber IDを指定することによって、他のプロバイダーのユーザと通信することができるようになります。</string>
+  <string name="welcome_text">XMPPはプロバイダーに依存しないプロトコルです。これまであなたが選択したどのXMPPサーバーでも、このクライアントを使用することができます。\nしかしあなたが便利なように、Conversationsで使用するのに最適なプロバイダーkandru.de¹で簡単にアカウントを作成することができるようにしています。</string>
+  <string name="magic_create_text">kandru.deのアカウントを作成する手順をガイドします。\nプロバイダーとしてkandru.deを選択すると、あなたの完全なJabber IDを指定することによって、他のプロバイダーのユーザと通信することができるようになります。</string>
   <string name="your_full_jid_will_be">あなたの完全な Jabber ID は: %s</string>
   <string name="create_account">アカウントを作成</string>
   <string name="use_own_provider">独自のプロバイダーを使用する</string>
