@@ -226,7 +226,7 @@ public class NotificationService {
 		setNotificationColor(mBuilder);
 		mBuilder.setDefaults(0);
 		if (led) {
-			mBuilder.setLights(0xff00FF00, 2000, 3000);
+			mBuilder.setLights(0xffff9600, 1000, 1000);
 		}
 	}
 
