@@ -34,12 +34,12 @@ public final class Config {
 		return (ENCRYPTION_MASK & (ENCRYPTION_MASK - 1)) != 0;
 	}
 
-	public static final String LOGTAG = "conversations";
+	public static final String LOGTAG = "kandruIM";
 
 	public static final String BUG_REPORTS = "bugs@kandru.de";
 
 
-	public static final String DOMAIN_LOCK = null; //only allow account creation for this domain
+	public static final String DOMAIN_LOCK = "kandru.de"; //only allow account creation for this domain
 	public static final String MAGIC_CREATE_DOMAIN = "kandru.de";
 	public static final boolean DISALLOW_REGISTRATION_IN_UI = false; //hide the register checkbox
 
