@@ -85,7 +85,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 
 	private void requireRecordPermission() {
 		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(this,
+			requestPermissions(this,
 					new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_PERMISSION_RECORD_AUDIO);
 		}
 	}
