@@ -508,8 +508,6 @@ public class ConversationActivity extends XmppActivity
 						Uri vuri = xmppConnectionService.getFileBackend().getTakeVideoUri();
 						intent.setAction(MediaStore.ACTION_VIDEO_CAPTURE);
 						intent.putExtra(MediaStore.EXTRA_OUTPUT, vuri);
-						mPendingImageUris.clear();
-						mPendingImageUris.add(vuri);
 						break;
 					case ATTACHMENT_CHOICE_CHOOSE_FILE:
 						chooser = true;
