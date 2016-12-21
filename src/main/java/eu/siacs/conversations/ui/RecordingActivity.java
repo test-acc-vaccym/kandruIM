@@ -66,7 +66,6 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		requireRecordPermission();
 		Log.d("Voice Recorder", "output: " + getOutputFile());
 		if (!startRecording()) {
 			mStopButton.setEnabled(false);
@@ -82,6 +81,14 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 			stopRecording(false);
 		}
 	}
+	
+	private boolean hasRecordPermission() {
+		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	private void requireRecordPermission() {
 		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -90,6 +97,10 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	}
 	
 	private boolean startRecording() {
+		if (!hasRecordPermission) {
+			requireRecordPermission();
+			return false;
+		}
 		mRecorder = new MediaRecorder();
 		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
@@ -138,7 +149,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	}
 
 	private void tick() {
-		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+		if (hasRecordPermission) {
 			long time = (mStartTime < 0) ? 0 : (SystemClock.elapsedRealtime() - mStartTime);
 			int minutes = (int) (time / 60000);
 			int seconds = (int) (time / 1000) % 60;
