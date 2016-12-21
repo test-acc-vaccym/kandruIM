@@ -1,7 +1,9 @@
 package eu.siacs.conversations.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -45,9 +47,12 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		}
 	};
 	private File mOutputFile;
+	
+	private final int REQUEST_PERMISSION_RECORD_AUDIO=1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		requireRecordPermission()
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_recording);
 		this.mTimerTextView = (TextView) this.findViewById(R.id.timer);
@@ -78,6 +83,14 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		}
 	}
 
+	private void requireRecordPermission() {
+		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_PERMISSION_RECORD_AUDIO);
+			}
+		}
+	}
+	
 	private boolean startRecording() {
 		mRecorder = new MediaRecorder();
 		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
