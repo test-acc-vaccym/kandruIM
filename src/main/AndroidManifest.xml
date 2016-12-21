@@ -4,6 +4,7 @@
     package="eu.siacs.conversations">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
@@ -185,7 +186,15 @@
                 android:value="eu.siacs.conversations.ui.SettingsActivity" />
         </activity>
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
-
+        <activity
+            android:name=".ui.RecordingActivity"
+            android:label="@string/voice_recorder"
+            android:configChanges="orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.provider.MediaStore.RECORD_SOUND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <service android:name=".services.ExportLogsService" />
         <service
             android:name=".services.ContactChooserTargetService"

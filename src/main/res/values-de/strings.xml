@@ -682,4 +682,7 @@
   <string name="blindly_trusted_omemo_keys">Blind vertraute OMEMO-Schlüssel</string>
   <string name="not_trusted">Nicht vertraut</string>
   <string name="invalid_barcode">Ungültiger Barcode</string>
+  <string name="voice_recorder_plugin">Sprachaufnahme-Plugin</string>
+  <string name="voice_recorder">Sprachaufnahme</string>
+  <string name="share">Teilen</string>
 </resources>

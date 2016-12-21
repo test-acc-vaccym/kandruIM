@@ -22,4 +22,15 @@
 	<color name="orange500">#ffff9800</color>
 	<color name="green500">#ffff9800</color>
 	<color name="bubble">#ff4b9b4a</color>
+	<!-- soundrecorder plugin -->
+	<color name="primary" type="color">#ff259b24</color>
+	<color name="primarydark" type="color">#ff0a7e07</color>
+	<color name="primarytext" type="color">#de000000</color>
+	<color name="secondarytext" type="color">#8a000000</color>
+	<color name="ondarktext" type="color">#fffafafa</color>
+	<color name="primarybackground" type="color">#fffafafa</color>
+	<color name="secondarybackground" type="color">#ffeeeeee</color>
+	<color name="darkbackground" type="color">#ff323232</color>
+	<color name="divider">#1f000000</color>
+	<!-- soundrecorder plugin end -->
 </resources>
