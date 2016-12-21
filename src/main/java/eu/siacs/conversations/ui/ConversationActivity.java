@@ -519,7 +519,7 @@ public class ConversationActivity extends XmppActivity
 						break;
 					case ATTACHMENT_CHOICE_RECORD_VOICE:
 						intent.setAction(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
-						fallbackPackageId = "eu.siacs.conversations.voicerecorder";
+						//fallbackPackageId = "eu.siacs.conversations.voicerecorder";
 						break;
 					case ATTACHMENT_CHOICE_LOCATION:
 						intent.setAction("eu.siacs.conversations.location.request");
