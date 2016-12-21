@@ -52,7 +52,6 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		requireRecordPermission();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_recording);
 		this.mTimerTextView = (TextView) this.findViewById(R.id.timer);
@@ -67,6 +66,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		requireRecordPermission();
 		Log.d("Voice Recorder", "output: " + getOutputFile());
 		if (!startRecording()) {
 			mStopButton.setEnabled(false);
