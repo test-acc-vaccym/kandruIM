@@ -685,4 +685,5 @@
   <string name="voice_recorder_plugin">Sprachaufnahme-Plugin</string>
   <string name="voice_recorder">Sprachaufnahme</string>
   <string name="share">Teilen</string>
+  <string name="attach_take_video">Video aufnehmen</string>
 </resources>
