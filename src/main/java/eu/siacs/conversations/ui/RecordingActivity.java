@@ -52,7 +52,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		requireRecordPermission()
+		requireRecordPermission();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_recording);
 		this.mTimerTextView = (TextView) this.findViewById(R.id.timer);
