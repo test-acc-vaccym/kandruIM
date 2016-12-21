@@ -99,7 +99,9 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	private boolean startRecording() {
 		if (!hasRecordPermission()) {
 			requireRecordPermission();
-			return false;
+			setResult(RESULT_CANCELED);
+			finish();
+			return true;
 		}
 		mRecorder = new MediaRecorder();
 		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
