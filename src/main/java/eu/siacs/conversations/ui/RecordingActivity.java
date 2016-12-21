@@ -97,7 +97,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	}
 	
 	private boolean startRecording() {
-		if (!hasRecordPermission) {
+		if (!hasRecordPermission()) {
 			requireRecordPermission();
 			return false;
 		}
@@ -149,7 +149,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	}
 
 	private void tick() {
-		if (hasRecordPermission) {
+		if (hasRecordPermission()) {
 			long time = (mStartTime < 0) ? 0 : (SystemClock.elapsedRealtime() - mStartTime);
 			int minutes = (int) (time / 60000);
 			int seconds = (int) (time / 1000) % 60;
