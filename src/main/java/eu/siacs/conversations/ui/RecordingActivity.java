@@ -1,4 +1,4 @@
-package eu.siacs.conversations.voicerecorder.ui;
+package eu.siacs.conversations.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import eu.siacs.conversations.voicerecorder.R;
+import eu.siacs.conversations.R;
 
 public class RecordingActivity extends Activity implements View.OnClickListener {
 
