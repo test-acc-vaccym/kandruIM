@@ -497,7 +497,7 @@ public class FileBackend {
 		pathBuilder.append('/');
 		pathBuilder.append("Camera");
 		pathBuilder.append('/');
-		pathBuilder.append("VID_" + this.imageDateFormat.format(new Date()) + ".mp4");
+		pathBuilder.append("VID_" + this.IMAGE_DATE_FORMAT.format(new Date()) + ".mp4");
 		Uri uri = Uri.parse("file://" + pathBuilder.toString());
 		File file = new File(uri.toString());
 		file.getParentFile().mkdirs();
