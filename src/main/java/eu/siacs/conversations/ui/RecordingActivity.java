@@ -138,18 +138,20 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	}
 
 	private void tick() {
-		long time = (mStartTime < 0) ? 0 : (SystemClock.elapsedRealtime() - mStartTime);
-		int minutes = (int) (time / 60000);
-		int seconds = (int) (time / 1000) % 60;
-		int milliseconds = (int) (time / 100) % 10;
-		mTimerTextView.setText(minutes+":"+(seconds < 10 ? "0"+seconds : seconds)+"."+milliseconds);
-		if (mRecorder != null) {
-			amplitudes[i] = mRecorder.getMaxAmplitude();
-			//Log.d("Voice Recorder","amplitude: "+(amplitudes[i] * 100 / 32767));
-			if (i >= amplitudes.length -1) {
-				i = 0;
-			} else {
-				++i;
+		if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+			long time = (mStartTime < 0) ? 0 : (SystemClock.elapsedRealtime() - mStartTime);
+			int minutes = (int) (time / 60000);
+			int seconds = (int) (time / 1000) % 60;
+			int milliseconds = (int) (time / 100) % 10;
+			mTimerTextView.setText(minutes+":"+(seconds < 10 ? "0"+seconds : seconds)+"."+milliseconds);
+			if (mRecorder != null) {
+				amplitudes[i] = mRecorder.getMaxAmplitude();
+				//Log.d("Voice Recorder","amplitude: "+(amplitudes[i] * 100 / 32767));
+				if (i >= amplitudes.length -1) {
+					i = 0;
+				} else {
+					}
+					++i;
 			}
 		}
 	}
