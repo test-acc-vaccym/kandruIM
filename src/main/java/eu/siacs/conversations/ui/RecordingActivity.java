@@ -198,6 +198,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 						mStopButton.setTextColor(0x8a000000);
 						Toast.makeText(this, R.string.unable_to_start_recording, Toast.LENGTH_SHORT).show();
 					}
+					break;
 				}
 				stopRecording(true);
 				Uri uri = Uri.parse("file://"+mOutputFile.getAbsolutePath());
