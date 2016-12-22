@@ -40,6 +40,8 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	private int[] amplitudes = new int[100];
 	private int i = 0;
 
+	private boolean isRecording = false;
+
 	private Handler mHandler = new Handler();
 	private Runnable mTickExecutor = new Runnable() {
 		@Override
@@ -70,11 +72,6 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	protected void onStart() {
 		super.onStart();
 		Log.d("Voice Recorder", "output: " + getOutputFile());
-		if (!startRecording()) {
-			mStopButton.setEnabled(false);
-			mStopButton.setTextColor(0x8a000000);
-			Toast.makeText(this,R.string.unable_to_start_recording,Toast.LENGTH_SHORT).show();
-		}
 	}
 
 	@Override
@@ -194,6 +191,14 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 				finish();
 				break;
 			case R.id.share_button:
+				if (!this.isRecording) {
+					this.isRecording = true;
+					if (!startRecording()) {
+						mStopButton.setEnabled(false);
+						mStopButton.setTextColor(0x8a000000);
+						Toast.makeText(this, R.string.unable_to_start_recording, Toast.LENGTH_SHORT).show();
+					}
+				}
 				stopRecording(true);
 				Uri uri = Uri.parse("file://"+mOutputFile.getAbsolutePath());
 				setResult(Activity.RESULT_OK, new Intent().setData(uri));
