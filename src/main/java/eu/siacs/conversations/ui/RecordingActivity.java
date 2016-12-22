@@ -186,7 +186,9 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	public void onClick(View view) {
 		switch (view.getId()) {
 			case R.id.cancel_button:
-				stopRecording(false);
+				if (this.isRecording) {
+					stopRecording(false);
+				}
 				setResult(RESULT_CANCELED);
 				finish();
 				break;
