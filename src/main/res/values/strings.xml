@@ -728,4 +728,5 @@
     <string name="voice_recorder">Voice Recorder</string>
     <string name="share">Share</string>
     <string name="unable_to_start_recording">Unable to start recording</string>
+	<string name="voice_recorder_quality">Record Quality</string>
 </resources>

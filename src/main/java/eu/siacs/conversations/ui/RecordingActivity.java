@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RatingBar;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 	private TextView mTimerTextView;
 	private Button mCancelButton;
 	private Button mStopButton;
+	private RatingBar mRatingBar;
 
 	private MediaRecorder mRecorder;
 	private long mStartTime = 0;
@@ -59,6 +61,7 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		this.mCancelButton.setOnClickListener(this);
 		this.mStopButton = (Button) this.findViewById(R.id.share_button);
 		this.mStopButton.setOnClickListener(this);
+		this.mRatingBar = (RatingBar) findViewById(R.id.ratingBar);
 		this.setFinishOnTouchOutside(false);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
@@ -108,7 +111,20 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);
-			mRecorder.setAudioEncodingBitRate(96000);
+			switch (Math.round(this.mRatingBar.getRating())) {
+				case 1:
+					mRecorder.setAudioEncodingBitRate(64000);
+					break;
+				case 2:
+					mRecorder.setAudioEncodingBitRate(96000);
+					break;
+				case 3:
+					mRecorder.setAudioEncodingBitRate(128000);
+					break;
+				default:
+					mRecorder.setAudioEncodingBitRate(96000);
+					break;
+			}
 		} else {
 			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 			mRecorder.setAudioEncodingBitRate(64000);

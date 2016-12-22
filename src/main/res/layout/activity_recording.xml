@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/primarybackground">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+                android:background="@color/primarybackground"
+    android:layout_width="match_parent">
 
     <LinearLayout
         android:id="@+id/button_bar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/timer"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
@@ -47,6 +48,28 @@
         android:typeface="monospace"
         android:textStyle="bold"
         android:id="@+id/timer"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar"
+        android:layout_above="@+id/timer"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="74dp"
+        android:numStars="@integer/abc_max_action_buttons"
+        android:isIndicator="false" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        tools:text="@string/voice_recorder_quality"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:layout_above="@+id/ratingBar"
+        android:layout_alignLeft="@+id/timer"
+        android:layout_alignStart="@+id/timer" />
+
 </RelativeLayout>
