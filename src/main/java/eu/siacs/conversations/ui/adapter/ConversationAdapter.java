@@ -62,7 +62,7 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 		ImageView notificationStatus = (ImageView) view.findViewById(R.id.notification_status);
 
 		Message message = conversation.getLatestMessage();
-
+		int unreadcount = conversation.unreadCount();
 		if (!conversation.isRead()) {
 			convName.setTypeface(null, Typeface.BOLD);
 		} else {
