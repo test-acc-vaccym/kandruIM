@@ -495,8 +495,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		});
 	}
 
-	private void displayImageMessage(ViewHolder viewHolder,
-			final Message message) {
+	private void displayImageMessage(final ViewHolder viewHolder, final Message message) {
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
@@ -532,15 +531,38 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 
 		// if its a GIF
 		if (message.getMimeType() != null && message.getMimeType().endsWith("/gif")) {
+			GifDrawable drawable;
 			try {
 				File gif = activity.xmppConnectionService.getFileBackend().getFile(message);
-				GifDrawable drawable = new GifDrawable(gif);
-				viewHolder.image.setImageDrawable(drawable);
+				drawable = new GifDrawable(gif);
 			}
 			catch (IOException error) {
 				// TODO: something better?
 				error.printStackTrace();
+				return;
 			}
+
+			// start the gif in non-animated mode
+			drawable.stop();
+			viewHolder.image.setImageDrawable(drawable);
+			viewHolder.image.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					// check if we're still talking about a gif
+					if (!(viewHolder.image.getDrawable() instanceof GifDrawable)) {
+						return;
+					}
+					GifDrawable gif = ((GifDrawable) viewHolder.image.getDrawable());
+
+					// toggle running
+					if (gif.isRunning()) {
+						gif.stop();
+					}
+					else {
+						gif.start();
+					}
+				}
+			});
 		}
 		// if its just a bitmap
 		else {
