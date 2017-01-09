@@ -730,4 +730,6 @@
     <string name="unable_to_start_recording">Unable to start recording</string>
 	<string name="voice_recorder_quality">Record Quality</string>
 	<string name="voice_recorder_share">Start / Stop</string>
+	<string name="show_inactive_devices">Show inactive devices</string>
+	<string name="hide_inactive_devices">Hide inactive devices</string>
 </resources>

@@ -98,6 +98,7 @@ import eu.siacs.conversations.ui.UiCallback;
 import eu.siacs.conversations.utils.ConversationsFileObserver;
 import eu.siacs.conversations.utils.CryptoHelper;
 import eu.siacs.conversations.utils.ExceptionHelper;
+import eu.siacs.conversations.utils.MimeUtils;
 import eu.siacs.conversations.utils.OnPhoneContactsLoadedListener;
 import eu.siacs.conversations.utils.PRNGFixes;
 import eu.siacs.conversations.utils.PhoneHelper;
@@ -493,9 +494,13 @@ public class XmppConnectionService extends Service {
 			callback.error(R.string.security_error_invalid_file_access, null);
 			return;
 		}
+
+		final String mimeType = MimeUtils.guessMimeTypeFromUri(this, uri);
 		final String compressPictures = getCompressPicturesPreference();
+
 		if ("never".equals(compressPictures)
-				|| ("auto".equals(compressPictures) && getFileBackend().useImageAsIs(uri))) {
+				|| ("auto".equals(compressPictures) && getFileBackend().useImageAsIs(uri))
+				|| (mimeType != null && mimeType.endsWith("/gif"))) {
 			Log.d(Config.LOGTAG,conversation.getAccount().getJid().toBareJid()+ ": not compressing picture. sending as file");
 			attachFileToConversation(conversation, uri, callback);
 			return;
@@ -874,7 +879,10 @@ public class XmppConnectionService extends Service {
 		this.databaseBackend = DatabaseBackend.getInstance(getApplicationContext());
 		this.accounts = databaseBackend.getAccounts();
 
-		if (!keepForegroundService() && databaseBackend.startTimeCountExceedsThreshold()) {
+		if (Config.FREQUENT_RESTARTS_THRESHOLD != 0
+				&& Config.FREQUENT_RESTARTS_DETECTION_WINDOW != 0
+				&& !keepForegroundService()
+				&& databaseBackend.startTimeCountExceedsThreshold()) {
 			getPreferences().edit().putBoolean(SettingsActivity.KEEP_FOREGROUND_SERVICE,true).commit();
 			Log.d(Config.LOGTAG,"number of restarts exceeds threshold. enabling foreground service");
 		}
