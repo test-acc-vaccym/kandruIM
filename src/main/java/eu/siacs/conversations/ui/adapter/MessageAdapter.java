@@ -5,15 +5,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.support.v4.content.FileProvider;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -23,7 +20,6 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.util.Linkify;
 import android.util.DisplayMetrics;
-import android.util.Patterns;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,13 +37,14 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import eu.siacs.conversations.Config;
 import eu.siacs.conversations.R;
 import eu.siacs.conversations.crypto.axolotl.FingerprintStatus;
-import eu.siacs.conversations.crypto.axolotl.XmppAxolotlSession;
 import eu.siacs.conversations.entities.Account;
 import eu.siacs.conversations.entities.Conversation;
 import eu.siacs.conversations.entities.DownloadableFile;
@@ -63,6 +60,7 @@ import eu.siacs.conversations.ui.widget.CopyTextView;
 import eu.siacs.conversations.ui.widget.ListSelectionManager;
 import eu.siacs.conversations.utils.CryptoHelper;
 import eu.siacs.conversations.utils.GeoHelper;
+import eu.siacs.conversations.utils.Patterns;
 import eu.siacs.conversations.utils.UIHelper;
 
 public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextView.CopyHandler {
@@ -75,6 +73,21 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 					+ Patterns.GOOD_IRI_CHAR
 					+ "\\;\\/\\?\\@\\&\\=\\#\\~\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])"
 					+ "|(?:\\%[a-fA-F0-9]{2}))+");
+
+	private static final Linkify.TransformFilter WEBURL_TRANSFORM_FILTER = new Linkify.TransformFilter() {
+		@Override
+		public String transformUrl(Matcher matcher, String url) {
+			if (url == null) {
+				return null;
+			}
+			final String lcUrl = url.toLowerCase(Locale.US);
+			if (lcUrl.startsWith("http://") || lcUrl.startsWith("https://")) {
+				return url;
+			} else {
+				return "http://"+url;
+			}
+		}
+	};
 
 	private ConversationActivity activity;
 
@@ -429,7 +442,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 							privateMarkerIndex + 1 + nick.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 			}
-			Linkify.addLinks(body, Linkify.WEB_URLS);
+			Linkify.addLinks(body, Patterns.AUTOLINK_WEB_URL, "http", null, WEBURL_TRANSFORM_FILTER);
 			Linkify.addLinks(body, XMPP_PATTERN, "xmpp");
 			Linkify.addLinks(body, GeoHelper.GEO_URI, "geo");
 			viewHolder.messageBody.setAutoLinkMask(0);
@@ -865,27 +878,18 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 			mime = "*/*";
 		}
 		Uri uri;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || Config.ONLY_INTERNAL_STORAGE) {
-			try {
-				uri = FileBackend.getUriForFile(activity, file);
-			} catch (IllegalArgumentException e) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-					Toast.makeText(activity, activity.getString(R.string.no_permission_to_access_x, file.getAbsolutePath()), Toast.LENGTH_SHORT).show();
-					return;
-				} else {
-					uri = Uri.fromFile(file);
-				}
-			}
-			openIntent.setDataAndType(uri, mime);
-			openIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-		} else {
-			uri = Uri.fromFile(file);
+		try {
+			uri = FileBackend.getUriForFile(activity, file);
+		} catch (SecurityException e) {
+			Toast.makeText(activity, activity.getString(R.string.no_permission_to_access_x, file.getAbsolutePath()), Toast.LENGTH_SHORT).show();
+			return;
 		}
 		openIntent.setDataAndType(uri, mime);
+		openIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		PackageManager manager = activity.getPackageManager();
 		List<ResolveInfo> info = manager.queryIntentActivities(openIntent, 0);
 		if (info.size() == 0) {
-			openIntent.setDataAndType(Uri.fromFile(file),"*/*");
+			openIntent.setDataAndType(uri,"*/*");
 		}
 		try {
 			getContext().startActivity(openIntent);
