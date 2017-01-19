@@ -81,7 +81,7 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 			imagePreview.setVisibility(View.GONE);
 			
 		        if(unreadcount>0) {
-				mLastMessage.setText(preview.first.substring(0, preview.first.length()>=10?10:preview.first.length()) + "... (" + String.valueOf(unreadcount) + ")");
+				mLastMessage.setText("(" + String.valueOf(unreadcount) + ") " + preview.first.substring(0, preview.first.length()>=10?10:preview.first.length()) + "...");
 			}
 			else{
 				mLastMessage.setText(preview.first);
