@@ -1122,7 +1122,7 @@ public class AxolotlService implements OnAdvancedStreamFeaturesLoaded {
 				session.resetPreKeyId();
 			}
 		} catch (CryptoFailedException e) {
-			Log.w(Config.LOGTAG, getLogprefix(account) + "Failed to decrypt message: " + e.getMessage());
+			Log.w(Config.LOGTAG, getLogprefix(account) + "Failed to decrypt message from "+message.getFrom()+": " + e.getMessage());
 		}
 
 		if (session.isFresh() && plaintextMessage != null) {
@@ -1136,7 +1136,12 @@ public class AxolotlService implements OnAdvancedStreamFeaturesLoaded {
 		XmppAxolotlMessage.XmppAxolotlKeyTransportMessage keyTransportMessage;
 
 		XmppAxolotlSession session = getReceivingSession(message);
-		keyTransportMessage = message.getParameters(session, getOwnDeviceId());
+		try {
+			keyTransportMessage = message.getParameters(session, getOwnDeviceId());
+		} catch (CryptoFailedException e) {
+			Log.d(Config.LOGTAG,"could not decrypt keyTransport message "+e.getMessage());
+			keyTransportMessage = null;
+		}
 
 		if (session.isFresh() && keyTransportMessage != null) {
 			putFreshSession(session);
