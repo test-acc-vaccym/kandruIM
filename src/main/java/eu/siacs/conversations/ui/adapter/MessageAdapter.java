@@ -52,6 +52,8 @@ import eu.siacs.conversations.entities.Message;
 import eu.siacs.conversations.entities.Message.FileParams;
 import eu.siacs.conversations.entities.Transferable;
 import eu.siacs.conversations.persistance.FileBackend;
+import eu.siacs.conversations.services.MessageArchiveService;
+import eu.siacs.conversations.services.NotificationService;
 import eu.siacs.conversations.ui.ConversationActivity;
 import eu.siacs.conversations.ui.text.DividerSpan;
 import eu.siacs.conversations.ui.text.QuoteSpan;
@@ -350,7 +352,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 			char current = body.length() > i ? body.charAt(i) : '\n';
 			if (lineStart == -1) {
 				if (previous == '\n') {
-					if (current == '>' || current == '\u00bb') {
+					if ((current == '>' && !UIHelper.isPositionFollowedByNumber(body,i)) || current == '\u00bb') {
 						// Line start with quote
 						lineStart = i;
 						if (quoteStart == -1) quoteStart = i;
@@ -446,6 +448,13 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 				if (hasMeCommand) {
 					body.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), privateMarkerIndex + 1,
 							privateMarkerIndex + 1 + nick.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+			}
+			if (message.getConversation().getMode() == Conversation.MODE_MULTI && message.getStatus() == Message.STATUS_RECEIVED) {
+				Pattern pattern = NotificationService.generateNickHighlightPattern(message.getConversation().getMucOptions().getActualNick());
+				Matcher matcher = pattern.matcher(body);
+				while(matcher.find()) {
+					body.setSpan(new StyleSpan(Typeface.BOLD), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 			}
 			Linkify.addLinks(body, XMPP_PATTERN, "xmpp");
@@ -556,9 +565,13 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		if (timestamp == 0) {
 			timestamp = System.currentTimeMillis();
 		}
-		activity.setMessagesLoaded();
-		activity.xmppConnectionService.getMessageArchiveService().query(conversation, 0, timestamp);
-		Toast.makeText(activity, R.string.fetching_history_from_server,Toast.LENGTH_LONG).show();
+		conversation.messagesLoaded.set(true);
+		MessageArchiveService.Query query = activity.xmppConnectionService.getMessageArchiveService().query(conversation, 0, timestamp);
+		if (query != null) {
+			Toast.makeText(activity, R.string.fetching_history_from_server, Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(activity,R.string.not_fetching_history_retention_period, Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override

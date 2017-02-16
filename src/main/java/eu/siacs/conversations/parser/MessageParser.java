@@ -521,6 +521,12 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				}
 			}
 
+			long deletionDate = mXmppConnectionService.getAutomaticMessageDeletionDate();
+			if (deletionDate != 0 && message.getTimeSent() < deletionDate) {
+				Log.d(Config.LOGTAG,account.getJid().toBareJid()+": skipping message from "+message.getCounterpart().toString()+" because it was sent prior to our deletion date");
+				return;
+			}
+
 			boolean checkForDuplicates = query != null
 					|| (isTypeGroupChat && packet.hasChild("delay","urn:xmpp:delay"))
 					|| message.getType() == Message.TYPE_PRIVATE;
@@ -570,9 +576,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				conversation.endOtrIfNeeded();
 			}
 
-			if (message.getEncryption() == Message.ENCRYPTION_NONE || mXmppConnectionService.saveEncryptedMessages()) {
-				mXmppConnectionService.databaseBackend.createMessage(message);
-			}
+			mXmppConnectionService.databaseBackend.createMessage(message);
 			final HttpConnectionManager manager = this.mXmppConnectionService.getHttpConnectionManager();
 			if (message.trusted() && message.treatAsDownloadable() != Message.Decision.NEVER && manager.getAutoAcceptFileSize() > 0) {
 				manager.createNewDownloadConnection(message);
@@ -624,6 +628,15 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 							mXmppConnectionService.getAvatarService().clear(conversation);
 							mXmppConnectionService.updateMucRosterUi();
 							mXmppConnectionService.updateConversationUi();
+							if (!user.getAffiliation().ranks(MucOptions.Affiliation.MEMBER)) {
+								Jid jid = user.getRealJid();
+								List<Jid> cryptoTargets = conversation.getAcceptedCryptoTargets();
+								if (cryptoTargets.remove(user.getRealJid())) {
+									Log.d(Config.LOGTAG,account.getJid().toBareJid()+": removed "+jid+" from crypto targets of "+conversation.getName());
+									conversation.setAcceptedCryptoTargets(cryptoTargets);
+									mXmppConnectionService.updateConversation(conversation);
+								}
+							}
 						}
 					}
 				}

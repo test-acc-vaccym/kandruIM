@@ -119,7 +119,7 @@
   <string name="pref_notification_grace_period">Fristperiode</string>
   <string name="pref_notification_grace_period_summary">Mengden tid Conversations forholder seg rolig i, etter å ha sett aktivitet på en annen enhet</string>
   <string name="pref_advanced_options">Avansert</string>
-  <string name="pref_never_send_crash">Aldri send feilrettingsrapporter</string>
+  <string name="pref_never_send_crash">Aldri send kræsjrapporter</string>
   <string name="pref_never_send_crash_summary">Ved å sende inn stabelsporinger hjelper du den pågående utviklingen av Conversations</string>
   <string name="pref_confirm_messages">Bekreft meldinger</string>
   <string name="pref_confirm_messages_summary">Lar dine kontakter vite når du har mottatt og lest deres meldinger</string>
@@ -128,7 +128,7 @@
   <string name="error_decrypting_file">I/O-feil ved dekryptering av fil</string>
   <string name="accept">Godta</string>
   <string name="error">En feil har inntruffet</string>
-  <string name="pref_grant_presence_updates">Tillat oppdateringer for tilstedeværelse</string>
+  <string name="pref_grant_presence_updates">Tilstedeværelsesoppdateringer</string>
   <string name="pref_grant_presence_updates_summary">Gi oppdatering for tilstedeværelse på forhånd til kontakter du har lagt til</string>
   <string name="subscriptions">Abonnement</string>
   <string name="your_account">Din konto</string>
@@ -138,7 +138,7 @@
   <string name="ask_for_presence_updates">Etterspør oppdateringer for tilstedeværelse</string>
   <string name="attach_choose_picture">Velg bilde</string>
   <string name="attach_take_picture">Ta bilde</string>
-  <string name="preemptively_grant">Tillat abbonnementsforespørsel på forhånd</string>
+  <string name="preemptively_grant">Tillat abonnementsforespørsel på forhånd</string>
   <string name="error_not_an_image_file">Filen du valgte er ikke et bilde</string>
   <string name="error_compressing_image">Feil ved konvertering av bildefila</string>
   <string name="error_file_not_found">Finner ikke filen</string>
@@ -295,7 +295,7 @@
   <string name="pref_force_encryption_summary">Alltid send meldinger kryptert (bortsett fra konferanser)</string>
   <string name="pref_allow_message_correction">Tillat meldingskorrigering</string>
   <string name="pref_allow_message_correction_summary">La dine kontakter korrigere sine meldinger i ettertid</string>
-  <string name="pref_dont_save_encrypted">Ikke lagre krypterte meldinger</string>
+  <string name="pref_dont_save_encrypted">Ikke lagre krypt. meldinger</string>
   <string name="pref_dont_save_encrypted_summary">Advarsel: Dette kan føre til at meldinger går tapt</string>
   <string name="pref_expert_options">Ekspertinnstillinger</string>
   <string name="pref_expert_options_summary">Vær forsiktig med disse</string>
@@ -308,14 +308,14 @@
   <string name="pref_quiet_hours_summary">Varslinger blir ikke spilt under stilletid</string>
   <string name="pref_use_larger_font">Øk tekststørrelse</string>
   <string name="pref_use_larger_font_summary">Bruk større tekststørrelser i hele programmet</string>
-  <string name="pref_use_send_button_to_indicate_status">Forsendelsesknappen indikerer status</string>
-  <string name="pref_use_indicate_received">Forespørr meldingskvitteringer</string>
+  <string name="pref_use_send_button_to_indicate_status">Forsendelsesknappstatus</string>
+  <string name="pref_use_indicate_received">Forespør meldingskvitteringer</string>
   <string name="pref_use_indicate_received_summary">Mottatte meldinger vil bli avmerket i grønt hvis støttet</string>
   <string name="pref_use_send_button_to_indicate_status_summary">Fargelegg send-knapp for å indikere kontakt-status</string>
   <string name="pref_expert_options_other">Annet</string>
   <string name="pref_conference_name">Konferanse-rom</string>
   <string name="pref_conference_name_summary">Bruk rommets samtaletema istedenfor JID til å identifisere konferanser</string>
-  <string name="pref_autojoin">Ta del i konferanser automatisk</string>
+  <string name="pref_autojoin">Gå rett inn i konferanser</string>
   <string name="pref_autojoin_summary">Respekter flagget for automatisk tilknytning i konferansebokmerker</string>
   <string name="toast_message_otr_fingerprint">OTR-fingeravtrykk kopiert til utklippstavle!</string>
   <string name="toast_message_omemo_fingerprint">OMEMO-fingeravtrykk kopiert til utklippstavle!</string>
@@ -332,6 +332,7 @@
   <string name="message_options">Meldingsvalg</string>
   <string name="copy_text">Kopier tekst</string>
   <string name="select_text">Velg tekst</string>
+  <string name="quote">Sitat</string>
   <string name="copy_original_url">Kopier orginal nettadresse</string>
   <string name="send_again">Send igjen</string>
   <string name="file_url">Filens nettadresse</string>
@@ -360,7 +361,7 @@
   <string name="smp_requested">Kontakt forespurte SMP-verifisering</string>
   <string name="no_otr_session_found">Ingen gyldig OTR-økt funnet!</string>
   <string name="conversations_foreground_service">kandruIM</string>
-  <string name="pref_keep_foreground_service">Behold tjenesten i forgrunnen</string>
+  <string name="pref_keep_foreground_service">Forgrunnstjeneste</string>
   <string name="pref_keep_foreground_service_summary">Forhindrer operativsystemet fra å drepe tilkoblingen din</string>
   <string name="pref_export_logs">Eksporter historikk</string>
   <string name="pref_export_logs_summary">Skriv loggføring av samtalehistorikk til SD-kort</string>
@@ -449,7 +450,7 @@
   <string name="eight_hours">8 timer</string>
   <string name="until_further_notice">Til videre beskjed</string>
   <string name="pref_input_options">Inndata</string>
-  <string name="pref_enter_is_send">Enter er forsendelsesknapp</string>
+  <string name="pref_enter_is_send">Enter-forsendelsesknapp</string>
   <string name="pref_enter_is_send_summary">Bruk enter for å sende en melding</string>
   <string name="pref_display_enter_key">Vis enter-tast</string>
   <string name="pref_display_enter_key_summary">Endre smilefjas-tast til en enter-tast</string>
@@ -520,11 +521,11 @@
   <string name="pref_presence_settings">Tilstedeværelse</string>
   <string name="pref_away_when_screen_off">Borte når skjermen er av</string>
   <string name="pref_away_when_screen_off_summary">Markerer din ressurs som borte når skjermen er avskrudd</string>
-  <string name="pref_xa_on_silent_mode">Ikke tilgjengelig i stille-modus</string>
+  <string name="pref_xa_on_silent_mode">Stille-tilgjengelighet</string>
   <string name="pref_xa_on_silent_mode_summary">Markerer din ressurs som \'ikke tilgjengelig\' når enheten er i stille-modus.</string>
   <string name="pref_treat_vibrate_as_silent">Behandle vibrering som stille-modus</string>
   <string name="pref_treat_vibrate_as_silent_summary">Markerer din ressurs som ikke tilgjengelig når enheten er skrudd til vibrering</string>
-  <string name="pref_show_connection_options">Utvidede tilkoblingsinnstillinger</string>
+  <string name="pref_show_connection_options">Utvidede tilkoblingsinnst.</string>
   <string name="pref_show_connection_options_summary">Vis vertsnavn og portinnstillinger når du setter opp en ny konto</string>
   <string name="hostname_example">xmpp.eksempel.no</string>
   <string name="action_add_account_with_certificate">Legg til konto med sertifikat</string>
@@ -600,7 +601,7 @@
   <string name="create_account">Opprett konto</string>
   <string name="use_own_provider">Bruk min egen tilbyder</string>
   <string name="pick_your_username">Velg ditt brukernavn</string>
-  <string name="pref_manually_change_presence">Endre tilstedeværelse manuelt</string>
+  <string name="pref_manually_change_presence">Egendef. tilstedeværelse</string>
   <string name="pref_manually_change_presence_summary">Trykk på avataren din for å endre tilstedeværelse</string>
   <string name="change_presence">Endre tilstedeværelse</string>
   <string name="status_message">Statusmelding</string>
@@ -624,7 +625,7 @@
   <string name="gp_short">Kort</string>
   <string name="gp_medium">Middels</string>
   <string name="gp_long">Lang</string>
-  <string name="pref_broadcast_last_activity">Kringkast siste brukerhandling</string>
+  <string name="pref_broadcast_last_activity">Kringkast bruk</string>
   <string name="pref_broadcast_last_activity_summary">La alle dine kontakter vite når du bruker Conversations</string>
   <string name="pref_privacy">Personvern</string>
   <string name="pref_theme_options">Drakt</string>
@@ -679,4 +680,15 @@
   <string name="blindly_trusted_omemo_keys">OMEMO-nøkler du stoler blindt på</string>
   <string name="not_trusted">Ikke betrodd</string>
   <string name="invalid_barcode">Ugyldig 2D-strekkode</string>
+  <string name="pref_clean_cache_summary">Tøm hurtiglagermappa (brukes av kameraprogrammet)</string>
+  <string name="pref_clean_cache">Tøm hurtiglager</string>
+  <string name="pref_clean_private_storage">Tøm privat lagring</string>
+  <string name="pref_clean_private_storage_summary">Tøm privat lagring der filene beholdes (De kan lastes ned igjen fra tjeneren)</string>
+  <string name="i_followed_this_link_from_a_trusted_source">Jeg fulgte denne lenken fra en tiltrodd kilde</string>
+  <string name="verifying_omemo_keys_trusted_source">Du er i ferd med å bekrefte at OMEMO-nøklene til %1$s etter å ha trykket på en lenke. Dette er bare sikkert hvis du fulgte denne lenken fra en tiltrodd kilde der bare %2$s kunne ha offentliggjort denne lenken.</string>
+  <string name="verify_omemo_keys">Bekreft OMEMO-nøkler</string>
+  <string name="show_inactive_devices">Vis inaktive enheter</string>
+  <string name="hide_inactive_devices">Skjul inaktive enheter</string>
+  <string name="distrust_omemo_key">Fjern tiltro til enhet</string>
+  <string name="distrust_omemo_key_text">Er du sikker på at du vil fjerne bekreftelsen av denne enheten?\nDenne eneheten og meldinger fra den vil bli vises som \'Ikke betrodd\'.</string>
 </resources>

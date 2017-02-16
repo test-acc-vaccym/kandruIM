@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
@@ -37,11 +38,15 @@ import net.java.otr4j.session.Session;
 import net.java.otr4j.session.SessionID;
 import net.java.otr4j.session.SessionImpl;
 import net.java.otr4j.session.SessionStatus;
+import net.ypresto.androidtranscoder.MediaTranscoder;
+import net.ypresto.androidtranscoder.format.MediaFormatStrategyPresets;
 
 import org.openintents.openpgp.IOpenPgpService2;
 import org.openintents.openpgp.util.OpenPgpApi;
 import org.openintents.openpgp.util.OpenPgpServiceConnection;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
@@ -55,9 +60,12 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import de.duenndns.ssl.MemorizingTrustManager;
 import eu.siacs.conversations.Config;
@@ -95,6 +103,7 @@ import eu.siacs.conversations.persistance.DatabaseBackend;
 import eu.siacs.conversations.persistance.FileBackend;
 import eu.siacs.conversations.ui.SettingsActivity;
 import eu.siacs.conversations.ui.UiCallback;
+import eu.siacs.conversations.ui.UiInformableCallback;
 import eu.siacs.conversations.utils.ConversationsFileObserver;
 import eu.siacs.conversations.utils.CryptoHelper;
 import eu.siacs.conversations.utils.ExceptionHelper;
@@ -264,6 +273,7 @@ public class XmppConnectionService extends Service {
 	private int mucRosterChangedListenerCount = 0;
 	private OnKeyStatusUpdated mOnKeyStatusUpdated = null;
 	private int keyStatusUpdatedListenerCount = 0;
+	private AtomicLong mLastExpiryRun = new AtomicLong(0);
 	private SecureRandom mRandom;
 	private LruCache<Pair<String,String>,ServiceDiscoveryResult> discoCache = new LruCache<>(20);
 	private final OnBindListener mOnBindListener = new OnBindListener() {
@@ -454,10 +464,10 @@ public class XmppConnectionService extends Service {
 		}
 		message.setCounterpart(conversation.getNextCounterpart());
 		message.setType(Message.TYPE_FILE);
-		final String path = getFileBackend().getOriginalPath(uri);
 		mFileAddingExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
+
+			private void processAsFile() {
+				final String path = getFileBackend().getOriginalPath(uri);
 				if (path != null) {
 					message.setRelativeFilePath(path);
 					getFileBackend().updateFileParams(message);
@@ -484,6 +494,72 @@ public class XmppConnectionService extends Service {
 						callback.error(e.getResId(), message);
 					}
 				}
+			}
+
+			private void processAsVideo() throws FileNotFoundException {
+				Log.d(Config.LOGTAG,"processing file as video");
+				message.setRelativeFilePath(message.getUuid() + ".mp4");
+				final DownloadableFile file = getFileBackend().getFile(message);
+				file.getParentFile().mkdirs();
+				ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
+				FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+				final ArrayList<Integer> progressTracker = new ArrayList<>();
+				final UiInformableCallback<Message> informableCallback;
+				if (callback instanceof UiInformableCallback) {
+					informableCallback = (UiInformableCallback<Message>) callback;
+				} else {
+					informableCallback = null;
+				}
+				MediaTranscoder.Listener listener = new MediaTranscoder.Listener() {
+					@Override
+					public void onTranscodeProgress(double progress) {
+						int p = ((int) Math.round(progress * 100) / 20) * 20;
+						if (!progressTracker.contains(p) && p != 100 && p != 0) {
+							progressTracker.add(p);
+							if (informableCallback != null) {
+
+								informableCallback.inform(getString(R.string.transcoding_video_progress, p));
+							}
+						}
+					}
+
+					@Override
+					public void onTranscodeCompleted() {
+						if (message.getEncryption() == Message.ENCRYPTION_DECRYPTED) {
+							getPgpEngine().encrypt(message, callback);
+						} else {
+							callback.success(message);
+						}
+					}
+
+					@Override
+					public void onTranscodeCanceled() {
+						processAsFile();
+					}
+
+					@Override
+					public void onTranscodeFailed(Exception e) {
+						Log.d(Config.LOGTAG,"video transcoding failed "+e.getMessage());
+						processAsFile();
+					}
+				};
+				MediaTranscoder.getInstance().transcodeVideo(fileDescriptor, file.getAbsolutePath(),
+						MediaFormatStrategyPresets.createAndroid720pStrategy(), listener);
+			}
+
+			@Override
+			public void run() {
+				final String mimeType = MimeUtils.guessMimeTypeFromUri(XmppConnectionService.this, uri);
+				if (mimeType != null && mimeType.startsWith("video/") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+					try {
+						processAsVideo();
+					} catch (Throwable e) {
+						processAsFile();
+					}
+				} else {
+					processAsFile();
+				}
+
 			}
 		});
 	}
@@ -643,6 +719,9 @@ public class XmppConnectionService extends Service {
 				} catch (final RuntimeException ignored) {
 				}
 			}
+		}
+		if (SystemClock.elapsedRealtime() - mLastExpiryRun.get() >= Config.EXPIRY_INTERVAL) {
+			expireOldMessages();
 		}
 		return START_STICKY;
 	}
@@ -851,6 +930,33 @@ public class XmppConnectionService extends Service {
 				}
 			}
 		}
+	}
+
+	private void expireOldMessages() {
+		expireOldMessages(false);
+	}
+
+	public void expireOldMessages(final boolean resetHasMessagesLeftOnServer) {
+		mLastExpiryRun.set(SystemClock.elapsedRealtime());
+		mDatabaseExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				long timestamp = getAutomaticMessageDeletionDate();
+				if (timestamp > 0) {
+					databaseBackend.expireOldMessages(timestamp);
+					synchronized (XmppConnectionService.this.conversations) {
+						for (Conversation conversation : XmppConnectionService.this.conversations) {
+							conversation.expireOldMessages(timestamp);
+							if (resetHasMessagesLeftOnServer) {
+								conversation.messagesLoaded.set(true);
+								conversation.setHasMessagesLeftOnServer(true);
+							}
+						}
+					}
+					updateConversationUi();
+				}
+			}
+		});
 	}
 
 	public boolean hasInternetConnection() {
@@ -1231,12 +1337,10 @@ public class XmppConnectionService extends Service {
 			if (addToConversation) {
 				conversation.add(message);
 			}
-			if (message.getEncryption() == Message.ENCRYPTION_NONE || saveEncryptedMessages()) {
-				if (saveInDb) {
-					databaseBackend.createMessage(message);
-				} else if (message.edited()) {
-					databaseBackend.updateMessage(message, message.getEditedId());
-				}
+			if (saveInDb) {
+				databaseBackend.createMessage(message);
+			} else if (message.edited()) {
+				databaseBackend.updateMessage(message, message.getEditedId());
 			}
 			updateConversationUi();
 		}
@@ -1346,6 +1450,12 @@ public class XmppConnectionService extends Service {
 			Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
+					long deletionDate = getAutomaticMessageDeletionDate();
+					mLastExpiryRun.set(SystemClock.elapsedRealtime());
+					if (deletionDate > 0) {
+						Log.d(Config.LOGTAG, "deleting messages that are older than "+AbstractGenerator.getTimestamp(deletionDate));
+						databaseBackend.expireOldMessages(deletionDate);
+					}
 					Log.d(Config.LOGTAG, "restoring roster");
 					for (Account account : accounts) {
 						databaseBackend.readRoster(account.getRoster());
@@ -1517,8 +1627,11 @@ public class XmppConnectionService extends Service {
 						MessageArchiveService.Query query = getMessageArchiveService().query(conversation, 0, timestamp);
 						if (query != null) {
 							query.setCallback(callback);
+							callback.informUser(R.string.fetching_history_from_server);
+						} else {
+							callback.informUser(R.string.not_fetching_history_retention_period);
 						}
-						callback.informUser(R.string.fetching_history_from_server);
+
 					}
 				}
 			}
@@ -2140,6 +2253,7 @@ public class XmppConnectionService extends Service {
 		OnIqPacketReceived callback = new OnIqPacketReceived() {
 
 			private int i = 0;
+			private boolean success = true;
 
 			@Override
 			public void onIqPacketReceived(Account account, IqPacket packet) {
@@ -2155,10 +2269,28 @@ public class XmppConnectionService extends Service {
 						}
 					}
 				} else {
+					success = false;
 					Log.d(Config.LOGTAG,account.getJid().toBareJid()+": could not request affiliation "+affiliations[i]+" in "+conversation.getJid().toBareJid());
 				}
 				++i;
 				if (i >= affiliations.length) {
+					List<Jid> members = conversation.getMucOptions().getMembers();
+					if (success) {
+						List<Jid> cryptoTargets = conversation.getAcceptedCryptoTargets();
+						boolean changed = false;
+						for(ListIterator<Jid> iterator = cryptoTargets.listIterator(); iterator.hasNext();) {
+							Jid jid = iterator.next();
+							if (!members.contains(jid)) {
+								iterator.remove();
+								Log.d(Config.LOGTAG,account.getJid().toBareJid()+": removed "+jid+" from crypto targets of "+conversation.getName());
+								changed = true;
+							}
+						}
+						if (changed) {
+							conversation.setAcceptedCryptoTargets(cryptoTargets);
+							updateConversation(conversation);
+						}
+					}
 					Log.d(Config.LOGTAG,account.getJid().toBareJid()+": retrieved members for "+conversation.getJid().toBareJid()+": "+conversation.getMucOptions().getMembers());
 					getAvatarService().clear(conversation);
 					updateMucRosterUi();
@@ -3026,6 +3158,15 @@ public class XmppConnectionService extends Service {
 				.getDefaultSharedPreferences(getApplicationContext());
 	}
 
+	public long getAutomaticMessageDeletionDate() {
+		try {
+			final long timeout = Long.parseLong(getPreferences().getString(SettingsActivity.AUTOMATIC_MESSAGE_DELETION, "0")) * 1000;
+			return timeout == 0 ? timeout : System.currentTimeMillis() - timeout;
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
 	public boolean confirmMessages() {
 		return getPreferences().getBoolean("confirm_messages", true);
 	}
@@ -3036,10 +3177,6 @@ public class XmppConnectionService extends Service {
 
 	public boolean sendChatStates() {
 		return getPreferences().getBoolean("chat_states", false);
-	}
-
-	public boolean saveEncryptedMessages() {
-		return !getPreferences().getBoolean("dont_save_encrypted", false);
 	}
 
 	private boolean respectAutojoin() {

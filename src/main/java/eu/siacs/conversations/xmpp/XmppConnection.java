@@ -1255,7 +1255,7 @@ public class XmppConnection implements Runnable {
 	}
 
 	private String nextRandomId() {
-		return new BigInteger(50, mXmppConnectionService.getRNG()).toString(32);
+		return new BigInteger(50, mXmppConnectionService.getRNG()).toString(36);
 	}
 
 	public String sendIqPacket(final IqPacket packet, final OnIqPacketReceived callback) {
@@ -1356,6 +1356,9 @@ public class XmppConnection implements Runnable {
 	}
 
 	private void forceCloseSocket() {
+		if (tagWriter != null) {
+			tagWriter.forceClose();
+		}
 		if (socket != null) {
 			try {
 				socket.close();
@@ -1375,7 +1378,6 @@ public class XmppConnection implements Runnable {
 		interrupt();
 		Log.d(Config.LOGTAG, account.getJid().toBareJid() + ": disconnecting force="+Boolean.valueOf(force));
 		if (force) {
-			tagWriter.forceClose();
 			forceCloseSocket();
 		} else {
 			if (tagWriter.isActive()) {
