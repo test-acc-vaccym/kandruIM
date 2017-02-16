@@ -34,6 +34,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -119,7 +120,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	private RelativeLayout snackbar;
 	private TextView snackbarMessage;
 	private TextView snackbarAction;
-	private boolean messagesLoaded = true;
 	private Toast messageLoaderToast;
 
 	private OnScrollListener mOnScrollListener = new OnScrollListener() {
@@ -134,14 +134,13 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		public void onScroll(AbsListView view, int firstVisibleItem,
 							 int visibleItemCount, int totalItemCount) {
 			synchronized (ConversationFragment.this.messageList) {
-				if (firstVisibleItem < 5 && messagesLoaded && messageList.size() > 0) {
+				if (firstVisibleItem < 5 && conversation != null && conversation.messagesLoaded.compareAndSet(true,false) && messageList.size() > 0) {
 					long timestamp;
 					if (messageList.get(0).getType() == Message.TYPE_STATUS && messageList.size() >= 2) {
 						timestamp = messageList.get(1).getTimeSent();
 					} else {
 						timestamp = messageList.get(0).getTimeSent();
 					}
-					messagesLoaded = false;
 					activity.xmppConnectionService.loadMoreMessages(conversation, timestamp, new XmppConnectionService.OnMoreMessagesLoaded() {
 						@Override
 						public void onMoreMessagesLoaded(final int c, Conversation conversation) {
@@ -170,7 +169,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 									messageListAdapter.notifyDataSetChanged();
 									int pos = Math.max(getIndexOf(uuid,messageList),0);
 									messagesView.setSelectionFromTop(pos, pxOffset);
-									messagesLoaded = true;
 									if (messageLoaderToast != null) {
 										messageLoaderToast.cancel();
 									}
@@ -377,10 +375,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	};
 	private ConversationActivity activity;
 	private Message selectedMessage;
-
-	public void setMessagesLoaded() {
-		this.messagesLoaded = true;
-	}
 
 	private void sendMessage() {
 		final String body = mEditMessage.getText().toString();
@@ -852,16 +846,22 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	}
 
 	protected void highlightInConference(String nick) {
-		String oldString = mEditMessage.getText().toString().trim();
-		if (oldString.isEmpty() || mEditMessage.getSelectionStart() == 0) {
+		final Editable editable = mEditMessage.getText();
+		String oldString = editable.toString().trim();
+		final int pos = mEditMessage.getSelectionStart();
+		if (oldString.isEmpty() || pos == 0) {
 			mEditMessage.getText().insert(0, nick + ": ");
 		} else {
-			if (mEditMessage.getText().charAt(
-					mEditMessage.getSelectionStart() - 1) != ' ') {
-				nick = " " + nick;
+			final char before = editable.charAt(pos - 1);
+			final char after = editable.length() > pos ? editable.charAt(pos) : '\0';
+			if (before == '\n') {
+				editable.insert(pos, nick + ": ");
+			} else {
+				editable.insert(pos,(Character.isWhitespace(before)? "" : " ") + nick + (Character.isWhitespace(after) ? "" : " "));
+				if (Character.isWhitespace(after)) {
+					mEditMessage.setSelection(mEditMessage.getSelectionStart()+1);
+				}
 			}
-			mEditMessage.getText().insert(mEditMessage.getSelectionStart(),
-					nick + " ");
 		}
 	}
 
@@ -909,7 +909,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		messageListAdapter.updatePreferences();
 		this.messagesView.setAdapter(messageListAdapter);
 		updateMessages();
-		this.messagesLoaded = true;
+		this.conversation.messagesLoaded.set(true);
 		synchronized (this.messageList) {
 			final Message first = conversation.getFirstUnreadMessage();
 			final int bottom = Math.max(0, this.messageList.size() - 1);
