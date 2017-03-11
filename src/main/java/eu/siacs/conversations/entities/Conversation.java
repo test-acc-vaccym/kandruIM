@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import eu.siacs.conversations.Config;
 import eu.siacs.conversations.crypto.PgpDecryptionService;
 import eu.siacs.conversations.crypto.axolotl.AxolotlService;
+import eu.siacs.conversations.persistance.FileBackend;
 import eu.siacs.conversations.xmpp.chatstate.ChatState;
 import eu.siacs.conversations.xmpp.jid.InvalidJidException;
 import eu.siacs.conversations.xmpp.jid.Jid;
@@ -174,8 +176,14 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		return null;
 	}
 
-	public void clearMessages() {
+	public void clearMessages(FileBackend fileBackend) {
 		synchronized (this.messages) {
+            for (final Message message : this.messages) {
+                if(message.isFileOrImage()) {
+                        File file = fileBackend.getFile(message);
+                        file.delete();
+                    }
+            }
 			this.messages.clear();
 		}
 	}

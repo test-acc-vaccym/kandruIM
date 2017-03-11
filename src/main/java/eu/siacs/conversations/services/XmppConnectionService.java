@@ -3640,7 +3640,7 @@ public class XmppConnectionService extends Service {
 		} else {
 			clearDate = System.currentTimeMillis();
 		}
-		conversation.clearMessages();
+		conversation.clearMessages(fileBackend);
 		conversation.setHasMessagesLeftOnServer(false); //avoid messages getting loaded through mam
 		conversation.setLastClearHistory(clearDate);
 		Runnable runnable = new Runnable() {
