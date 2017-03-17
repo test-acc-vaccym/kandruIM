@@ -1285,7 +1285,8 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 
 	protected void updateDateTag(){
 		String currentDate=null;
-		String pattern = "MMMM dd";
+		//FIXME enable to change pattern in settings
+		String pattern = "dd.MM.yyyy";
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 		for(int i = 0; i < this.messageList.size(); i++){
 			Date date=new Date(this.messageList.get(i).getTimeSent());
