@@ -10,12 +10,12 @@ import org.whispersystems.libaxolotl.ecc.ECPublicKey;
 import org.whispersystems.libaxolotl.state.PreKeyRecord;
 import org.whispersystems.libaxolotl.state.SignedPreKeyRecord;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -28,7 +28,7 @@ import eu.siacs.conversations.entities.Conversation;
 import eu.siacs.conversations.entities.DownloadableFile;
 import eu.siacs.conversations.services.MessageArchiveService;
 import eu.siacs.conversations.services.XmppConnectionService;
-import eu.siacs.conversations.utils.Xmlns;
+import eu.siacs.conversations.xml.Namespace;
 import eu.siacs.conversations.xml.Element;
 import eu.siacs.conversations.xmpp.forms.Data;
 import eu.siacs.conversations.xmpp.jid.Jid;
@@ -78,9 +78,16 @@ public class IqGenerator extends AbstractGenerator {
 		time.addChild("utc").setContent(getTimestamp(now));
 		TimeZone ourTimezone = TimeZone.getDefault();
 		long offsetSeconds = ourTimezone.getOffset(now) / 1000;
-		long offsetMinutes = offsetSeconds % (60 * 60);
-		long offsetHours = offsetSeconds / (60 * 60);
-		time.addChild("tzo").setContent(String.format("%02d",offsetHours)+":"+String.format("%02d",offsetMinutes));
+		long offsetMinutes = Math.abs((offsetSeconds % 3600) / 60);
+		long offsetHours = offsetSeconds / 3600;
+		String hours;
+		if (offsetHours<0) {
+			hours = String.format(Locale.US,"%03d",offsetHours);
+		} else {
+			hours = String.format(Locale.US,"%02d",offsetHours);
+		}
+		String minutes = String.format(Locale.US,"%02d",offsetMinutes);
+		time.addChild("tzo").setContent(hours+":"+minutes);
 		return packet;
 	}
 
@@ -230,10 +237,10 @@ public class IqGenerator extends AbstractGenerator {
 
 	public IqPacket queryMessageArchiveManagement(final MessageArchiveService.Query mam) {
 		final IqPacket packet = new IqPacket(IqPacket.TYPE.SET);
-		final Element query = packet.query("urn:xmpp:mam:0");
+		final Element query = packet.query(mam.isLegacy() ? Namespace.MAM_LEGACY : Namespace.MAM);
 		query.setAttribute("queryid", mam.getQueryId());
 		final Data data = new Data();
-		data.setFormType("urn:xmpp:mam:0");
+		data.setFormType(mam.isLegacy() ? Namespace.MAM_LEGACY : Namespace.MAM);
 		if (mam.muc()) {
 			packet.setTo(mam.getWith());
 		} else if (mam.getWith()!=null) {
@@ -252,14 +259,14 @@ public class IqGenerator extends AbstractGenerator {
 	}
 	public IqPacket generateGetBlockList() {
 		final IqPacket iq = new IqPacket(IqPacket.TYPE.GET);
-		iq.addChild("blocklist", Xmlns.BLOCKING);
+		iq.addChild("blocklist", Namespace.BLOCKING);
 
 		return iq;
 	}
 
 	public IqPacket generateSetBlockRequest(final Jid jid, boolean reportSpam) {
 		final IqPacket iq = new IqPacket(IqPacket.TYPE.SET);
-		final Element block = iq.addChild("block", Xmlns.BLOCKING);
+		final Element block = iq.addChild("block", Namespace.BLOCKING);
 		final Element item = block.addChild("item").setAttribute("jid", jid.toBareJid().toString());
 		if (reportSpam) {
 			item.addChild("report", "urn:xmpp:reporting:0").addChild("spam");
@@ -270,7 +277,7 @@ public class IqGenerator extends AbstractGenerator {
 
 	public IqPacket generateSetUnblockRequest(final Jid jid) {
 		final IqPacket iq = new IqPacket(IqPacket.TYPE.SET);
-		final Element block = iq.addChild("unblock", Xmlns.BLOCKING);
+		final Element block = iq.addChild("unblock", Namespace.BLOCKING);
 		block.addChild("item").setAttribute("jid", jid.toBareJid().toString());
 		return iq;
 	}
@@ -278,7 +285,7 @@ public class IqGenerator extends AbstractGenerator {
 	public IqPacket generateSetPassword(final Account account, final String newPassword) {
 		final IqPacket packet = new IqPacket(IqPacket.TYPE.SET);
 		packet.setTo(account.getServer());
-		final Element query = packet.addChild("query", Xmlns.REGISTER);
+		final Element query = packet.addChild("query", Namespace.REGISTER);
 		final Jid jid = account.getJid();
 		query.addChild("username").setContent(jid.getLocalpart());
 		query.addChild("password").setContent(newPassword);
@@ -317,7 +324,7 @@ public class IqGenerator extends AbstractGenerator {
 	public IqPacket requestHttpUploadSlot(Jid host, DownloadableFile file, String mime) {
 		IqPacket packet = new IqPacket(IqPacket.TYPE.GET);
 		packet.setTo(host);
-		Element request = packet.addChild("request", Xmlns.HTTP_UPLOAD);
+		Element request = packet.addChild("request", Namespace.HTTP_UPLOAD);
 		request.addChild("filename").setContent(convertFilename(file.getName()));
 		request.addChild("size").setContent(String.valueOf(file.getExpectedSize()));
 		if (mime != null) {
@@ -334,7 +341,7 @@ public class IqGenerator extends AbstractGenerator {
 				ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
 				bb.putLong(uuid.getMostSignificantBits());
 				bb.putLong(uuid.getLeastSignificantBits());
-				return Base64.encodeToString(bb.array(), Base64.URL_SAFE) + name.substring(pos, name.length());
+				return Base64.encodeToString(bb.array(), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP) + name.substring(pos, name.length());
 			} catch (Exception e) {
 				return name;
 			}
@@ -396,5 +403,24 @@ public class IqGenerator extends AbstractGenerator {
 		options.putString("muc#roomconfig_publicroom", "0");
 		options.putString("muc#roomconfig_whois", "anyone");
 		return options;
+	}
+
+	public IqPacket requestPubsubConfiguration(Jid jid, String node) {
+		return pubsubConfiguration(jid, node, null);
+	}
+
+	public IqPacket publishPubsubConfiguration(Jid jid, String node, Data data) {
+		return pubsubConfiguration(jid,node,data);
+	}
+
+	private IqPacket pubsubConfiguration(Jid jid, String node, Data data) {
+		IqPacket packet = new IqPacket(data == null ? IqPacket.TYPE.GET : IqPacket.TYPE.SET);
+		packet.setTo(jid);
+		Element pubsub = packet.addChild("pubsub","http://jabber.org/protocol/pubsub#owner");
+		Element configure = pubsub.addChild("configure").setAttribute("node",node);
+		if (data != null) {
+			configure.addChild(data);
+		}
+		return packet;
 	}
 }

@@ -353,6 +353,7 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 
 			@Override
 			public void run() {
+				hideKeyboard();
 				final Intent intent;
 				final XmppConnection connection = mAccount.getXmppConnection();
 				final boolean wasFirstAccount = xmppConnectionService != null && xmppConnectionService.getAccounts().size() == 1;
@@ -571,9 +572,8 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 		if (mAccount != null && mAccount.isOnlineAndConnected()) {
 			if (!mAccount.getXmppConnection().getFeatures().blocking()) {
 				showBlocklist.setVisible(false);
-			} else {
-				showBlocklist.setEnabled(mAccount.getBlocklist().size() > 0);
 			}
+
 			if (!mAccount.getXmppConnection().getFeatures().register()) {
 				changePassword.setVisible(false);
 			}

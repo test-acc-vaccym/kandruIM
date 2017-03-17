@@ -58,7 +58,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 	private static DatabaseBackend instance = null;
 
 	private static final String DATABASE_NAME = "history";
-	private static final int DATABASE_VERSION = 34;
+	private static final int DATABASE_VERSION = 35;
 
 	private static String CREATE_CONTATCS_STATEMENT = "create table "
 			+ Contact.TABLENAME + "(" + Contact.ACCOUNT + " TEXT, "
@@ -150,6 +150,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 	private static String CREATE_START_TIMES_TABLE = "create table "+START_TIMES_TABLE+" (timestamp NUMBER);";
 
 	private static String CREATE_MESSAGE_TIME_INDEX = "create INDEX message_time_index ON "+Message.TABLENAME+"("+Message.TIME_SENT+")";
+	private static String CREATE_MESSAGE_CONVERSATION_INDEX = "create INDEX message_conversation_index ON "+Message.TABLENAME+"("+Message.CONVERSATION+")";
 
 	private DatabaseBackend(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -199,6 +200,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 				+ Conversation.TABLENAME + "(" + Conversation.UUID
 				+ ") ON DELETE CASCADE);");
 		db.execSQL(CREATE_MESSAGE_TIME_INDEX);
+		db.execSQL(CREATE_MESSAGE_CONVERSATION_INDEX);
 		db.execSQL(CREATE_CONTATCS_STATEMENT);
 		db.execSQL(CREATE_DISCOVERY_RESULTS_STATEMENT);
 		db.execSQL(CREATE_SESSIONS_STATEMENT);
@@ -411,7 +413,11 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 			if (oldFilesDirectory.exists() && oldFilesDirectory.isDirectory()) {
 				newFilesDirectory.mkdirs();
 				newVideosDirectory.mkdirs();
-				for(File file : oldFilesDirectory.listFiles()) {
+				final File[] files = oldFilesDirectory.listFiles();
+				if (files == null) {
+					return;
+				}
+				for(File file : files) {
 					if (file.getName().equals(".nomedia")) {
 						if (file.delete()) {
 							Log.d(Config.LOGTAG,"deleted nomedia file in "+oldFilesDirectory.getAbsolutePath());
@@ -431,6 +437,9 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 					}
 				}
 			}
+		}
+		if (oldVersion < 35 && newVersion >= 35) {
+			db.execSQL(CREATE_MESSAGE_CONVERSATION_INDEX);
 		}
 	}
 
@@ -636,8 +645,10 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 			cursor.moveToLast();
 			do {
 				Message message = Message.fromCursor(cursor);
-				message.setConversation(conversation);
-				list.add(message);
+				if (message != null) {
+					message.setConversation(conversation);
+					list.add(message);
+				}
 			} while (cursor.moveToPrevious());
 		}
 		cursor.close();
@@ -824,7 +835,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 		Cursor cursor = null;
 		try {
 			SQLiteDatabase db = this.getReadableDatabase();
-			String sql = "select messages.timeSent,messages.serverMsgId from accounts join conversations on accounts.uuid=conversations.accountUuid join messages on conversations.uuid=messages.conversationUuid where accounts.uuid=? and (messages.status=0 or messages.carbon=1 or messages.serverMsgId not null) order by messages.timesent desc limit 1";
+			String sql = "select messages.timeSent,messages.serverMsgId from accounts join conversations on accounts.uuid=conversations.accountUuid join messages on conversations.uuid=messages.conversationUuid where accounts.uuid=? and (messages.status=0 or messages.carbon=1 or messages.serverMsgId not null) and conversations.mode=0 order by messages.timesent desc limit 1";
 			String[] args = {account.getUuid()};
 			cursor = db.rawQuery(sql, args);
 			if (cursor.getCount() == 0) {

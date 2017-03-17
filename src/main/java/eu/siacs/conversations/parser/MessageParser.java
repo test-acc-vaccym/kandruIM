@@ -31,7 +31,7 @@ import eu.siacs.conversations.http.HttpConnectionManager;
 import eu.siacs.conversations.services.MessageArchiveService;
 import eu.siacs.conversations.services.XmppConnectionService;
 import eu.siacs.conversations.utils.CryptoHelper;
-import eu.siacs.conversations.utils.Xmlns;
+import eu.siacs.conversations.xml.Namespace;
 import eu.siacs.conversations.xml.Element;
 import eu.siacs.conversations.xmpp.OnMessagePacketReceived;
 import eu.siacs.conversations.xmpp.chatstate.ChatState;
@@ -47,20 +47,29 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 		super(service);
 	}
 
-	private boolean extractChatState(Conversation conversation, final MessagePacket packet) {
+	private boolean extractChatState(Conversation c, final boolean isTypeGroupChat, final MessagePacket packet) {
 		ChatState state = ChatState.parse(packet);
-		if (state != null && conversation != null) {
-			final Account account = conversation.getAccount();
+		if (state != null && c != null) {
+			final Account account = c.getAccount();
 			Jid from = packet.getFrom();
 			if (from.toBareJid().equals(account.getJid().toBareJid())) {
-				conversation.setOutgoingChatState(state);
+				c.setOutgoingChatState(state);
 				if (state == ChatState.ACTIVE || state == ChatState.COMPOSING) {
-					mXmppConnectionService.markRead(conversation);
+					mXmppConnectionService.markRead(c);
 					activateGracePeriod(account);
 				}
 				return false;
 			} else {
-				return conversation.setIncomingChatState(state);
+				if (isTypeGroupChat) {
+					MucOptions.User user = c.getMucOptions().findUserByFullJid(from);
+					if (user != null) {
+						return user.setChatState(state);
+					} else {
+						return false;
+					}
+				} else {
+					return c.setIncomingChatState(state);
+				}
 			}
 		}
 		return false;
@@ -212,10 +221,24 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 		return null;
 	}
 
+	private static String extractStanzaId(Element packet, boolean isTypeGroupChat, Conversation conversation) {
+		final Jid by;
+		final boolean safeToExtract;
+		if (isTypeGroupChat) {
+			by = conversation.getJid().toBareJid();
+			safeToExtract = conversation.getMucOptions().hasFeature(Namespace.STANZA_IDS);
+		} else {
+			Account account = conversation.getAccount();
+			by = account.getJid().toBareJid();
+			safeToExtract = account.getXmppConnection().getFeatures().stanzaIds();
+		}
+		return safeToExtract ? extractStanzaId(packet, by) : null;
+	}
+
 	private static String extractStanzaId(Element packet, Jid by) {
 		for(Element child : packet.getChildren()) {
 			if (child.getName().equals("stanza-id")
-					&& Xmlns.STANZA_IDS.equals(child.getNamespace())
+					&& Namespace.STANZA_IDS.equals(child.getNamespace())
 					&& by.equals(child.getAttributeAsJid("by"))) {
 				return child.getAttribute("id");
 			}
@@ -300,15 +323,16 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 		final boolean isForwarded;
 		boolean isCarbon = false;
 		String serverMsgId = null;
-		final Element fin = original.findChild("fin", "urn:xmpp:mam:0");
+		final Element fin = original.findChild("fin", Namespace.MAM_LEGACY);
 		if (fin != null) {
-			mXmppConnectionService.getMessageArchiveService().processFin(fin,original.getFrom());
+			mXmppConnectionService.getMessageArchiveService().processFinLegacy(fin,original.getFrom());
 			return;
 		}
-		final Element result = original.findChild("result","urn:xmpp:mam:0");
+		final boolean mamLegacy = original.hasChild("result", Namespace.MAM_LEGACY);
+		final Element result = original.findChild("result",mamLegacy ? Namespace.MAM_LEGACY : Namespace.MAM);
 		final MessageArchiveService.Query query = result == null ? null : mXmppConnectionService.getMessageArchiveService().findQuery(result.getAttribute("queryid"));
 		if (query != null && query.validFrom(original.getFrom())) {
-			Pair<MessagePacket, Long> f = original.getForwardedMessagePacket("result", "urn:xmpp:mam:0");
+			Pair<MessagePacket, Long> f = original.getForwardedMessagePacket("result", mamLegacy ? Namespace.MAM_LEGACY : Namespace.MAM);
 			if (f == null) {
 				return;
 			}
@@ -351,7 +375,13 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 		final Jid counterpart;
 		final Jid to = packet.getTo();
 		final Jid from = packet.getFrom();
-		final String remoteMsgId = packet.getId();
+		final Element originId = packet.findChild("origin-id",Namespace.STANZA_IDS);
+		final String remoteMsgId;
+		if (originId != null && originId.getAttribute("id") != null) {
+			remoteMsgId = originId.getAttribute("id");
+		} else {
+			remoteMsgId = packet.getId();
+		}
 		boolean notify = false;
 
 		if (from == null) {
@@ -375,20 +405,23 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			return;
 		}
 
-		if (!isTypeGroupChat
-				&& query == null
-				&& extractChatState(mXmppConnectionService.find(account, counterpart.toBareJid()), packet)) {
+		if (query == null && extractChatState(mXmppConnectionService.find(account, counterpart.toBareJid()), isTypeGroupChat, packet)) {
 			mXmppConnectionService.updateConversationUi();
 		}
 
 		if ((body != null || pgpEncrypted != null || axolotlEncrypted != null) && !isMucStatusMessage) {
-			Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, counterpart.toBareJid(), isTypeGroupChat, query);
+			Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, counterpart.toBareJid(), isTypeGroupChat, false, query);
 			final boolean conversationMultiMode = conversation.getMode() == Conversation.MODE_MULTI;
+
+			if (serverMsgId == null) {
+				serverMsgId = extractStanzaId(packet, isTypeGroupChat, conversation);
+			}
+
 			if (isTypeGroupChat) {
-				if (counterpart.getResourcepart().equals(conversation.getMucOptions().getActualNick())) {
+				if (conversation.getMucOptions().isSelf(counterpart)) {
 					status = Message.STATUS_SEND_RECEIVED;
 					isCarbon = true; //not really carbon but received from another resource
-					if (mXmppConnectionService.markMessage(conversation, remoteMsgId, status)) {
+					if (mXmppConnectionService.markMessage(conversation, remoteMsgId, status, serverMsgId)) {
 						return;
 					} else if (remoteMsgId == null || Config.IGNORE_ID_REWRITE_IN_MUC) {
 						Message message = conversation.findSentMessageWithBody(packet.getBody());
@@ -435,21 +468,6 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				}
 			} else {
 				message = new Message(conversation, body, Message.ENCRYPTION_NONE, status);
-			}
-
-			if (serverMsgId == null) {
-				final Jid by;
-				final boolean safeToExtract;
-				if (isTypeGroupChat) {
-					by = conversation.getJid().toBareJid();
-					safeToExtract = true; //conversation.getMucOptions().hasFeature(Xmlns.STANZA_IDS);
-				} else {
-					by = account.getJid().toBareJid();
-					safeToExtract = true; //account.getXmppConnection().getFeatures().stanzaIds();
-				}
-				if (safeToExtract) {
-					serverMsgId = extractStanzaId(packet, by);
-				}
 			}
 
 			message.setCounterpart(counterpart);
@@ -506,7 +524,11 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 							}
 							mXmppConnectionService.updateMessage(replacedMessage, uuid);
 							mXmppConnectionService.getNotificationService().updateNotification(false);
-							if (mXmppConnectionService.confirmMessages() && remoteMsgId != null && !isForwarded && !isTypeGroupChat) {
+							if (mXmppConnectionService.confirmMessages()
+									&& (replacedMessage.trusted() || replacedMessage.getType() == Message.TYPE_PRIVATE)
+									&& remoteMsgId != null
+									&& !isForwarded
+									&& !isTypeGroupChat) {
 								sendMessageReceipts(account, packet);
 							}
 							if (replacedMessage.getEncryption() == Message.ENCRYPTION_PGP) {
@@ -527,9 +549,9 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				return;
 			}
 
-			boolean checkForDuplicates = query != null
-					|| (isTypeGroupChat && packet.hasChild("delay","urn:xmpp:delay"))
-					|| message.getType() == Message.TYPE_PRIVATE;
+			boolean checkForDuplicates = (isTypeGroupChat && packet.hasChild("delay","urn:xmpp:delay"))
+					|| message.getType() == Message.TYPE_PRIVATE
+					|| message.getServerMsgId() != null;
 			if (checkForDuplicates && conversation.hasDuplicateMessage(message)) {
 				Log.d(Config.LOGTAG,"skipping duplicate message from "+message.getCounterpart().toString()+" "+message.getBody());
 				return;
@@ -540,8 +562,11 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			} else {
 				conversation.add(message);
 			}
+			if (query != null) {
+				query.incrementActualMessageCount();
+			}
 
-			if (query == null || query.getWith() == null) { //either no mam or catchup
+			if (query == null || query.isCatchup()) { //either no mam or catchup
 				if (status == Message.STATUS_SEND || status == Message.STATUS_SEND_RECEIVED) {
 					mXmppConnectionService.markRead(conversation);
 					if (query == null) {
@@ -562,7 +587,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			}
 
 			if (mXmppConnectionService.confirmMessages()
-					&& message.trusted()
+					&& (message.trusted() || message.getType() == Message.TYPE_PRIVATE)
 					&& remoteMsgId != null
 					&& !isForwarded
 					&& !isTypeGroupChat) {
@@ -583,7 +608,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			} else if (notify) {
 				if (query == null) {
 					mXmppConnectionService.getNotificationService().push(message);
-				} else if (query.getWith() == null) { // mam catchup
+				} else if (query.isCatchup()) { // mam catchup
 					mXmppConnectionService.getNotificationService().pushFromBacklog(message);
 				}
 			}

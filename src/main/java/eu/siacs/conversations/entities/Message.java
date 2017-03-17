@@ -9,7 +9,7 @@ import java.net.URL;
 
 import eu.siacs.conversations.Config;
 import eu.siacs.conversations.crypto.axolotl.FingerprintStatus;
-import eu.siacs.conversations.crypto.axolotl.XmppAxolotlSession;
+import eu.siacs.conversations.http.AesGcmURLStreamHandler;
 import eu.siacs.conversations.utils.CryptoHelper;
 import eu.siacs.conversations.utils.GeoHelper;
 import eu.siacs.conversations.utils.MimeUtils;
@@ -154,6 +154,8 @@ public class Message extends AbstractEntity {
 			}
 		} catch (InvalidJidException e) {
 			jid = null;
+		} catch (IllegalStateException e) {
+			return null; // message too long?
 		}
 		Jid trueCounterpart;
 		try {
@@ -217,7 +219,7 @@ public class Message extends AbstractEntity {
 		} else {
 			values.put(TRUE_COUNTERPART, trueCounterpart.toPreppedString());
 		}
-		values.put(BODY, body);
+		values.put(BODY, body.length() > Config.MAX_STORAGE_MESSAGE_CHARS ? body.substring(0,Config.MAX_STORAGE_MESSAGE_CHARS) : body);
 		values.put(TIME_SENT, timeSent);
 		values.put(ENCRYPTION, encryption);
 		values.put(STATUS, status);
@@ -655,6 +657,12 @@ public class Message extends AbstractEntity {
 		}
 		try {
 			URL url = new URL(body);
+			String ref = url.getRef();
+			final String protocol = url.getProtocol();
+			final boolean encrypted = ref != null && ref.matches("([A-Fa-f0-9]{2}){48}");
+			if (AesGcmURLStreamHandler.PROTOCOL_NAME.equalsIgnoreCase(protocol) && encrypted) {
+				return Decision.MUST;
+			}
 			if (!url.getProtocol().equalsIgnoreCase("http") && !url.getProtocol().equalsIgnoreCase("https")) {
 				return Decision.NEVER;
 			} else if (oob) {
@@ -664,8 +672,6 @@ public class Message extends AbstractEntity {
 			if (extension == null) {
 				return Decision.NEVER;
 			}
-			String ref = url.getRef();
-			boolean encrypted = ref != null && ref.matches("([A-Fa-f0-9]{2}){48}");
 
 			if (encrypted) {
 				return Decision.MUST;
