@@ -299,6 +299,15 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
         super.onStop();
     }
 
+    @Override
+    public void onNewIntent(Intent intent) {
+        if (xmppConnectionServiceBound) {
+            handleIntent(intent);
+        } else {
+            setIntent(intent);
+        }
+    }
+
     protected void openConversationForContact(int position) {
         Contact contact = (Contact) contacts.get(position);
         openConversationForContact(contact);
@@ -348,11 +357,8 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
             Toast.makeText(this, R.string.invalid_jid, Toast.LENGTH_SHORT).show();
             return;
         }
-        Conversation conversation = xmppConnectionService.findOrCreateConversation(bookmark.getAccount(), jid, true);
+        Conversation conversation = xmppConnectionService.findOrCreateConversation(bookmark.getAccount(), jid, true, true);
         conversation.setBookmark(bookmark);
-        if (!conversation.getMucOptions().online()) {
-            xmppConnectionService.joinMuc(conversation);
-        }
         if (!bookmark.autojoin() && getPreferences().getBoolean("autojoin", true)) {
             bookmark.setAutojoin(true);
             xmppConnectionService.pushBookmarks(bookmark.getAccount());
@@ -368,7 +374,7 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
 
     protected void toggleContactBlock() {
         final int position = contact_context_id;
-        BlockContactDialog.show(this, xmppConnectionService, (Contact) contacts.get(position));
+        BlockContactDialog.show(this, (Contact) contacts.get(position));
     }
 
     protected void deleteContact() {
@@ -507,23 +513,15 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
                                 account.getBookmarks().add(bookmark);
                                 xmppConnectionService.pushBookmarks(account);
                                 final Conversation conversation = xmppConnectionService
-                                        .findOrCreateConversation(account,
-                                                conferenceJid, true);
+                                        .findOrCreateConversation(account, conferenceJid, true, true);
                                 conversation.setBookmark(bookmark);
-                                if (!conversation.getMucOptions().online()) {
-                                    xmppConnectionService.joinMuc(conversation);
-                                }
                                 dialog.dismiss();
                                 mCurrentDialog = null;
                                 switchToConversation(conversation);
                             }
                         } else {
                             final Conversation conversation = xmppConnectionService
-                                    .findOrCreateConversation(account,
-                                            conferenceJid, true);
-                            if (!conversation.getMucOptions().online()) {
-                                xmppConnectionService.joinMuc(conversation);
-                            }
+                                    .findOrCreateConversation(account,conferenceJid, true, true);
                             dialog.dismiss();
                             mCurrentDialog = null;
                             switchToConversation(conversation);
@@ -584,7 +582,7 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
     protected void switchToConversation(Contact contact, String body) {
         Conversation conversation = xmppConnectionService
                 .findOrCreateConversation(contact.getAccount(),
-                        contact.getJid(), false);
+                        contact.getJid(),false);
         switchToConversation(conversation, body, false);
     }
 
@@ -719,9 +717,10 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
                         }
                     }
                     if (account != null && jids.size() > 0) {
-                        xmppConnectionService.createAdhocConference(account, subject, jids, mAdhocConferenceCallback);
-                        mToast = Toast.makeText(this, R.string.creating_conference, Toast.LENGTH_LONG);
-                        mToast.show();
+                        if (xmppConnectionService.createAdhocConference(account, subject, jids, mAdhocConferenceCallback)) {
+                            mToast = Toast.makeText(this, R.string.creating_conference, Toast.LENGTH_LONG);
+                            mToast.show();
+                        }
                     }
                 }
             } else {

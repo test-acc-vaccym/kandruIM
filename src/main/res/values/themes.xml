@@ -8,6 +8,8 @@
         <item name="TextSizeInfo">12sp</item>
         <item name="TextSizeBody">14sp</item>
         <item name="TextSizeHeadline">20sp</item>
+        <item name="TextSeparation">5sp</item>
+        <item name="IconSize">18sp</item>
 
         <item name="attr/color_text_primary">@color/black87</item>
         <item name="attr/color_text_secondary">@color/black54</item>
@@ -25,6 +27,12 @@
         <item name="attr/ic_send_text_offline">@drawable/ic_send_text_offline</item>
         <item name="attr/ic_send_voice_offline">@drawable/ic_send_voice_offline</item>
 
+        <item name="attr/ic_attach_camera">@drawable/ic_attach_camera</item>
+        <item name="attr/ic_attach_document">@drawable/ic_attach_document</item>
+        <item name="attr/ic_attach_location">@drawable/ic_attach_location</item>
+        <item name="attr/ic_attach_photo">@drawable/ic_attach_photo</item>
+        <item name="attr/ic_attach_record">@drawable/ic_attach_record</item>
+
         <item name="attr/icon_add_group">@drawable/ic_action_add_group</item>
         <item name="attr/icon_add_person">@drawable/ic_action_add_person</item>
         <item name="attr/icon_cancel">@drawable/ic_action_cancel</item>
@@ -38,6 +46,8 @@
         <item name="attr/message_bubble_received_monochrome">@drawable/message_bubble_received_white</item>
         <item name="attr/message_bubble_sent">@drawable/message_bubble_sent</item>
         <item name="attr/message_bubble_received_green">@drawable/message_bubble_received</item>
+
+        <item name="attr/unread_count">@color/unreadcountlight</item>
 
         <item name="attr/conversations_overview_background">@color/primary700</item>
 
@@ -72,6 +82,8 @@
         <item name="android:actionBarTabStyle">@style/ConversationsActionBarTabs</item>
         <item name="TextSizeInfo">12sp</item>
         <item name="TextSizeBody">14sp</item>
+        <item name="TextSeparation">5sp</item>
+        <item name="IconSize">18sp</item>
         <item name="TextSizeHeadline">20sp</item>
 
         <item name="attr/color_text_primary">@color/white</item>
@@ -90,9 +102,17 @@
         <item name="attr/ic_send_text_offline">@drawable/ic_send_text_offline_white</item>
         <item name="attr/ic_send_voice_offline">@drawable/ic_send_voice_offline_white</item>
 
+        <item name="attr/ic_attach_camera">@drawable/ic_attach_camera_white</item>
+        <item name="attr/ic_attach_document">@drawable/ic_attach_document_white</item>
+        <item name="attr/ic_attach_location">@drawable/ic_attach_location_white</item>
+        <item name="attr/ic_attach_photo">@drawable/ic_attach_photo_white</item>
+        <item name="attr/ic_attach_record">@drawable/ic_attach_record_white</item>
+
         <item name="attr/message_bubble_received_monochrome">@drawable/message_bubble_received_grey</item>
         <item name="attr/message_bubble_sent">@drawable/message_bubble_sent_grey</item>
         <item name="attr/message_bubble_received_green">@drawable/message_bubble_received_dark</item>
+
+        <item name="attr/unread_count">@color/unreadcountdark</item>
 
         <item name="attr/conversations_overview_background">@color/primary900</item>
 
@@ -134,12 +154,16 @@
     <style name="ConversationsTheme.LargerText" parent="ConversationsTheme">
         <item name="TextSizeInfo">14sp</item>
         <item name="TextSizeBody">16sp</item>
+        <item name="TextSeparation">6sp</item>
+        <item name="IconSize">20sp</item>
         <item name="TextSizeHeadline">22sp</item>
     </style>
 
     <style name="ConversationsTheme.Dark.LargerText" parent="ConversationsTheme.Dark">
         <item name="TextSizeInfo">14sp</item>
         <item name="TextSizeBody">16sp</item>
+        <item name="IconSize">20sp</item>
+        <item name="TextSeparation">6sp</item>
         <item name="TextSizeHeadline">22sp</item>
     </style>
 

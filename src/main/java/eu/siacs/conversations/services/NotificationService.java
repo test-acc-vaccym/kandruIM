@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
@@ -14,6 +15,8 @@ import android.support.v4.app.NotificationCompat.Builder;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.RemoteInput;
 import android.text.Html;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
@@ -59,15 +62,21 @@ public class NotificationService {
 	}
 
 	public boolean notify(final Message message) {
-		return (message.getStatus() == Message.STATUS_RECEIVED)
+		return message.getStatus() == Message.STATUS_RECEIVED
 				&& notificationsEnabled()
 				&& !message.getConversation().isMuted()
-				&& (message.getConversation().alwaysNotify() || wasHighlightedOrPrivate(message)
-		);
+				&& (message.getConversation().alwaysNotify() || wasHighlightedOrPrivate(message))
+				&& (!message.getConversation().isWithStranger() || notificationsFromStrangers())
+		;
 	}
 
 	public boolean notificationsEnabled() {
 		return mXmppConnectionService.getPreferences().getBoolean("show_notification", true);
+	}
+
+	private boolean notificationsFromStrangers() {
+		return mXmppConnectionService.getPreferences().getBoolean("notifications_from_strangers",
+				mXmppConnectionService.getResources().getBoolean(R.bool.notifications_from_strangers));
 	}
 
 	public boolean isQuietHours() {
@@ -230,6 +239,8 @@ public class NotificationService {
 				final int dat = 70;
 				final long[] pattern = {0, 3 * dat, dat, dat};
 				mBuilder.setVibrate(pattern);
+			} else {
+				mBuilder.setVibrate(new long[]{0});
 			}
 			if (ringtone != null) {
 				mBuilder.setSound(Uri.parse(ringtone));
@@ -238,6 +249,7 @@ public class NotificationService {
 		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			mBuilder.setCategory(Notification.CATEGORY_MESSAGE);
 		}
+		mBuilder.setPriority(notify ? NotificationCompat.PRIORITY_DEFAULT : NotificationCompat.PRIORITY_LOW);
 		setNotificationColor(mBuilder);
 		mBuilder.setDefaults(0);
 		if (led) {
@@ -259,12 +271,16 @@ public class NotificationService {
 			if (messages.size() > 0) {
 				conversation = messages.get(0).getConversation();
 				final String name = conversation.getName();
+				SpannableString styledString;
 				if (Config.HIDE_MESSAGE_TEXT_IN_NOTIFICATION) {
 					int count = messages.size();
-					style.addLine(Html.fromHtml("<b>"+name+"</b>: "+mXmppConnectionService.getResources().getQuantityString(R.plurals.x_messages,count,count)));
+					styledString = new SpannableString(name + ": " + mXmppConnectionService.getResources().getQuantityString(R.plurals.x_messages,count,count));
+					styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, name.length(), 0);
+					style.addLine(styledString);
 				} else {
-					style.addLine(Html.fromHtml("<b>" + name + "</b>: "
-							+ UIHelper.getMessagePreview(mXmppConnectionService, messages.get(0)).first));
+					styledString = new SpannableString(name + ": " + UIHelper.getMessagePreview(mXmppConnectionService, messages.get(0)).first);
+					styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, name.length(), 0);
+					style.addLine(styledString);
 				}
 				names.append(name);
 				names.append(", ");
@@ -385,8 +401,29 @@ public class NotificationService {
 			}
 			builder.setStyle(messagingStyle);
 		} else {
-			builder.setStyle(new NotificationCompat.BigTextStyle().bigText(getMergedBodies(messages)));
-			builder.setContentText(UIHelper.getMessagePreview(mXmppConnectionService, messages.get((messages.size()-1))).first);
+			if(messages.get(0).getConversation().getMode() == Conversation.MODE_SINGLE) {
+				builder.setStyle(new NotificationCompat.BigTextStyle().bigText(getMergedBodies(messages)));
+				builder.setContentText(UIHelper.getMessagePreview(mXmppConnectionService, messages.get((messages.size() - 1))).first);
+			} else {
+				final NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
+				SpannableString styledString;
+				for (Message message : messages) {
+					final String name = UIHelper.getMessageDisplayName(message);
+					styledString = new SpannableString(name + ": " + message.getBody());
+					styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, name.length(), 0);
+					style.addLine(styledString);
+				}
+				builder.setStyle(style);
+				int count = messages.size();
+				if(count == 1) {
+					final String name = UIHelper.getMessageDisplayName(messages.get(0));
+					styledString = new SpannableString(name + ": " + messages.get(0).getBody());
+					styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, name.length(), 0);
+					builder.setContentText(styledString);
+				} else {
+					builder.setContentText(mXmppConnectionService.getResources().getQuantityString(R.plurals.x_messages,count,count));
+				}
+			}
 		}
 	}
 

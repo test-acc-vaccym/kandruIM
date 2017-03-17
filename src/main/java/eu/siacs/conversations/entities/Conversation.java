@@ -58,6 +58,7 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	public static final String ATTRIBUTE_CRYPTO_TARGETS = "crypto_targets";
 	public static final String ATTRIBUTE_LAST_CLEAR_HISTORY = "last_clear_history";
 
+	private String draftMessage;
 	private String name;
 	private String contactUuid;
 	private String accountUuid;
@@ -192,7 +193,7 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	}
 
 	public boolean setOutgoingChatState(ChatState state) {
-		if (mode == MODE_MULTI) {
+		if (mode == MODE_MULTI && (getNextCounterpart() != null || !isPnNA())) {
 			return false;
 		}
 		if (this.mOutgoingChatState != state) {
@@ -356,8 +357,9 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		setAttribute(ATTRIBUTE_CRYPTO_TARGETS, acceptedTargets);
 	}
 
-	public void setCorrectingMessage(Message correctingMessage) {
+	public boolean setCorrectingMessage(Message correctingMessage) {
 		this.correctingMessage = correctingMessage;
+		return correctingMessage == null && draftMessage != null;
 	}
 
 	public Message getCorrectingMessage() {
@@ -379,6 +381,14 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		} else {
 			return 0;
 		}
+	}
+
+	public void setDraftMessage(String draftMessage) {
+		this.draftMessage = draftMessage;
+	}
+
+	public String getDraftMessage() {
+		return draftMessage;
 	}
 
 	public interface OnMessageFound {
@@ -445,7 +455,8 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	public Message getLatestMessage() {
 		if (this.messages.size() == 0) {
 			Message message = new Message(this, "", Message.ENCRYPTION_NONE);
-			message.setTime(getCreated());
+			message.setType(Message.TYPE_STATUS);
+			message.setTime(Math.max(getCreated(),getLastClearHistory()));
 			return message;
 		} else {
 			Message message = this.messages.get(this.messages.size() - 1);
@@ -979,6 +990,25 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 			}
 			return count;
 		}
+	}
+
+	private int sentMessagesCount() {
+		int count = 0;
+		synchronized (this.messages) {
+			for(Message message : messages) {
+				if (message.getStatus() != Message.STATUS_RECEIVED) {
+					++count;
+				}
+			}
+		}
+		return count;
+	}
+
+	public boolean isWithStranger() {
+		return mode == MODE_SINGLE
+				&& !getJid().equals(account.getJid().toDomainJid())
+				&& !getContact().mutualPresenceSubscription()
+				&& sentMessagesCount() == 0;
 	}
 
 	public class Smp {

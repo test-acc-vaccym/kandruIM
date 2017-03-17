@@ -33,4 +33,6 @@
 	<color name="darkbackground" type="color">#ff323232</color>
 	<color name="divider">#1f000000</color>
 	<!-- soundrecorder plugin end -->
+	<color name="unreadcountlight">#ff4b9b4a</color>
+	<color name="unreadcountdark">#ff326130</color>
 </resources>

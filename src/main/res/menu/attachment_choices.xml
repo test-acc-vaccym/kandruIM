@@ -3,15 +3,18 @@
 
     <item
         android:id="@+id/attach_location"
-        android:title="@string/send_location"/>
+        android:title="@string/send_location"
+        android:icon="?attr/ic_attach_location"/>
 
     <item
         android:id="@+id/attach_record_voice"
-        android:title="@string/attach_record_voice"/>
+        android:title="@string/attach_record_voice"
+        android:icon="?attr/ic_attach_record"/>
 
     <item
         android:id="@+id/attach_take_picture"
-        android:title="@string/attach_take_picture"/>
+        android:title="@string/attach_take_picture"
+        android:icon="?attr/ic_attach_camera"/>
 
     <item
         android:id="@+id/attach_take_video"
@@ -19,10 +22,12 @@
 
     <item
         android:id="@+id/attach_choose_picture"
-        android:title="@string/attach_choose_picture"/>
+        android:title="@string/attach_choose_picture"
+        android:icon="?attr/ic_attach_photo"/>
 
     <item
         android:id="@+id/attach_choose_file"
-        android:title="@string/choose_file"/>
+        android:title="@string/choose_file"
+        android:icon="?attr/ic_attach_document"/>
 
 </menu>

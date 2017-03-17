@@ -178,6 +178,7 @@
 	<string name="mgmt_account_delete_confirm_text">If you delete your account your entire conversation history will be lost</string>
 	<string name="attach_record_voice">Record voice</string>
 	<string name="account_settings_jabber_id">Jabber ID</string>
+	<string name="block_jabber_id">Block Jabber ID</string>
 	<string name="account_settings_password">Password</string>
 	<string name="account_settings_example_jabber_id">username@example.com</string>
 	<string name="account_settings_confirm_password">Confirm password</string>
@@ -305,7 +306,7 @@
 	<string name="pref_about_conversations_summary">Build and licensing information</string>
 	<string name="pref_about_message" translatable="false">
 			Conversations • the very last word in instant messaging.
-			\n\nCopyright © 2014-2016 Daniel Gultsch
+			\n\nCopyright © 2014-2017 Daniel Gultsch
 			\n\nThis program is free software: you can redistribute it and/or modify
 			it under the terms of the GNU General Public License as published by
 			the Free Software Foundation, either version 3 of the License, or
@@ -503,6 +504,8 @@
 	<string name="disable_account">Disable Account</string>
 	<string name="contact_is_typing">%s is typing…</string>
 	<string name="contact_has_stopped_typing">%s has stopped typing</string>
+	<string name="contacts_are_typing">%s are typing…</string>
+	<string name="contacts_have_stopped_typing">%s have stopped typing</string>
 	<string name="pref_chat_states">Typing notifications</string>
 	<string name="pref_chat_states_summary">Let your contacts know when you are writing messages to them</string>
 	<string name="send_location">Send location</string>
@@ -738,6 +741,11 @@
 	<string name="pref_automatically_delete_messages">Automatic message deletion</string>
 	<string name="pref_automatically_delete_messages_description">Automatically delete messages from this device that are older than the configured time frame.</string>
 	<string name="encrypting_message">Encrypting message</string>
-	<string name="not_fetching_history_retention_period">Overstepping local retention period.</string>
+	<string name="not_fetching_history_retention_period">Not fetching messages due to local retention period.</string>
 	<string name="transcoding_video_progress">Compressing video (%s%% completed)</string>
+	<string name="corresponding_conversations_closed">Corresponding conversations closed.</string>
+	<string name="contact_blocked_past_tense">Contact blocked.</string>
+	<string name="pref_notifications_from_strangers">Notifications from strangers</string>
+	<string name="pref_notifications_from_strangers_summary">Notify for messages received from strangers.</string>
+	<string name="received_message_from_stranger">Received message from stranger</string>
 </resources>

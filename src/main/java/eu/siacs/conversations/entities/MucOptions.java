@@ -7,7 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import eu.siacs.conversations.Config;
 import eu.siacs.conversations.R;
+import eu.siacs.conversations.xml.Namespace;
+import eu.siacs.conversations.xmpp.chatstate.ChatState;
 import eu.siacs.conversations.xmpp.forms.Data;
 import eu.siacs.conversations.xmpp.forms.Field;
 import eu.siacs.conversations.xmpp.jid.InvalidJidException;
@@ -46,6 +49,18 @@ public class MucOptions {
 
 	public boolean autoPushConfiguration() {
 		return mAutoPushConfiguration;
+	}
+
+	public boolean isSelf(Jid counterpart) {
+		return counterpart.getResourcepart().equals(getActualNick());
+	}
+
+	public void resetChatState() {
+		synchronized (users) {
+			for(User user : users) {
+				user.chatState = Config.DEFAULT_CHATSTATE;
+			}
+		}
 	}
 
 	public enum Affiliation {
@@ -153,6 +168,7 @@ public class MucOptions {
 		private long pgpKeyId = 0;
 		private Avatar avatar;
 		private MucOptions options;
+		private ChatState chatState = Config.DEFAULT_CHATSTATE;
 
 		public User(MucOptions options, Jid from) {
 			this.options = options;
@@ -318,6 +334,14 @@ public class MucOptions {
 		public Jid getRealJid() {
 			return realJid;
 		}
+
+		public boolean setChatState(ChatState chatState) {
+			if (this.chatState == chatState) {
+				return false;
+			}
+			this.chatState = chatState;
+			return true;
+		}
 	}
 
 	private Account account;
@@ -331,7 +355,6 @@ public class MucOptions {
 	private User self;
 	private String subject = null;
 	private String password = null;
-	public boolean mNickChangingInProgress = false;
 
 	public MucOptions(Conversation conversation) {
 		this.account = conversation.getAccount();
@@ -373,8 +396,11 @@ public class MucOptions {
 	}
 
 	public boolean mamSupport() {
-		// Update with "urn:xmpp:mam:1" once we support it
-		return hasFeature("urn:xmpp:mam:0");
+		return hasFeature(Namespace.MAM) || hasFeature(Namespace.MAM_LEGACY);
+	}
+
+	public boolean mamLegacy() {
+		return hasFeature(Namespace.MAM_LEGACY) && !hasFeature(Namespace.MAM);
 	}
 
 	public boolean nonanonymous() {
@@ -444,8 +470,10 @@ public class MucOptions {
 			if (old != null) {
 				users.remove(old);
 			}
+			boolean fullJidIsSelf = isOnline && user.getFullJid() != null && user.getFullJid().equals(self.getFullJid());
 			if ((!membersOnly() || user.getAffiliation().ranks(Affiliation.MEMBER))
-					&& user.getAffiliation().outranks(Affiliation.OUTCAST)){
+					&& user.getAffiliation().outranks(Affiliation.OUTCAST)
+					&& !fullJidIsSelf){
 				this.users.add(user);
 			}
 		}
@@ -513,6 +541,21 @@ public class MucOptions {
 				}
 				return onlineUsers;
 			}
+		}
+	}
+
+	public ArrayList<User> getUsersWithChatState(ChatState state, int max) {
+		synchronized (users) {
+			ArrayList<User> list = new ArrayList<>();
+			for(User user : users) {
+				if (user.chatState == state) {
+					list.add(user);
+					if (list.size() >= max) {
+						break;
+					}
+				}
+			}
+			return list;
 		}
 	}
 
@@ -593,20 +636,16 @@ public class MucOptions {
 
 	public String createNameFromParticipants() {
 		if (getUserCount() >= 2) {
-			List<String> names = new ArrayList<>();
+			StringBuilder builder = new StringBuilder();
 			for (User user : getUsers(5)) {
+				if (builder.length() != 0) {
+					builder.append(", ");
+				}
 				Contact contact = user.getContact();
 				if (contact != null && !contact.getDisplayName().isEmpty()) {
-					names.add(contact.getDisplayName().split("\\s+")[0]);
+					builder.append(contact.getDisplayName().split("\\s+")[0]);
 				} else if (user.getName() != null){
-					names.add(user.getName());
-				}
-			}
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < names.size(); ++i) {
-				builder.append(names.get(i));
-				if (i != names.size() - 1) {
-					builder.append(", ");
+					builder.append(user.getName());
 				}
 			}
 			return builder.toString();
