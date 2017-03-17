@@ -35,4 +35,5 @@
 	<!-- soundrecorder plugin end -->
 	<color name="unreadcountlight">#ff4b9b4a</color>
 	<color name="unreadcountdark">#ff326130</color>
+	<color name="datetagtextcolor">#ffd68000</color>
 </resources>
