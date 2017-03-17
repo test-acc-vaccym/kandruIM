@@ -40,38 +40,28 @@
     </LinearLayout>
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="50sp"
-        android:text="0:00.0"
-        android:textColor="@color/primarydark"
-        android:typeface="monospace"
-        android:textStyle="bold"
         android:id="@+id/timer"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-
-    <RatingBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ratingBar"
-        android:layout_above="@+id/timer"
+        android:layout_above="@+id/button_bar"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="74dp"
-        android:numStars="@integer/abc_max_action_buttons"
-        android:isIndicator="false"
-        android:rating="3"
-        android:stepSize="1" />
+        android:layout_marginBottom="38dp"
+        android:text="0:00.0"
+        android:textColor="@color/primary700"
+        android:textSize="50sp"
+        android:textStyle="bold"
+        android:typeface="monospace" />
 
     <TextView
-        android:text="@string/voice_recorder_quality"
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView2"
-        tools:text="@string/voice_recorder_quality"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:layout_above="@+id/ratingBar"
-        android:layout_alignLeft="@+id/timer"
-        android:layout_alignStart="@+id/timer" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="27dp"
+        android:text="@string/voice_recorder"
+        android:textColor="@color/primary700"
+        android:textSize="36sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>
