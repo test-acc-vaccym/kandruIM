@@ -63,7 +63,6 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		this.mCancelButton.setOnClickListener(this);
 		this.mStopButton = (Button) this.findViewById(R.id.share_button);
 		this.mStopButton.setOnClickListener(this);
-		this.mRatingBar = (RatingBar) findViewById(R.id.ratingBar);
 		this.setFinishOnTouchOutside(false);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
@@ -108,7 +107,8 @@ public class RecordingActivity extends Activity implements View.OnClickListener 
 		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);
-			switch (Math.round(this.mRatingBar.getRating())) {
+			//FIXME get quality from preferences.
+			switch (3) {
 				case 1:
 					mRecorder.setAudioEncodingBitRate(64000);
 					break;
