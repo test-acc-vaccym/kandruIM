@@ -18,7 +18,8 @@
 
     <item
         android:id="@+id/attach_take_video"
-        android:title="@string/attach_take_video"/>
+        android:title="@string/attach_take_video"
+        android:icon="?attr/ic_attach_video"/>
 
     <item
         android:id="@+id/attach_choose_picture"

@@ -28,6 +28,7 @@
         <item name="attr/ic_send_voice_offline">@drawable/ic_send_voice_offline</item>
 
         <item name="attr/ic_attach_camera">@drawable/ic_attach_camera</item>
+		<item name="attr/ic_attach_video">@drawable/ic_attach_video</item>
         <item name="attr/ic_attach_document">@drawable/ic_attach_document</item>
         <item name="attr/ic_attach_location">@drawable/ic_attach_location</item>
         <item name="attr/ic_attach_photo">@drawable/ic_attach_photo</item>
@@ -103,6 +104,7 @@
         <item name="attr/ic_send_voice_offline">@drawable/ic_send_voice_offline_white</item>
 
         <item name="attr/ic_attach_camera">@drawable/ic_attach_camera_white</item>
+		<item name="attr/ic_attach_video">@drawable/ic_attach_video_white</item>
         <item name="attr/ic_attach_document">@drawable/ic_attach_document_white</item>
         <item name="attr/ic_attach_location">@drawable/ic_attach_location_white</item>
         <item name="attr/ic_attach_photo">@drawable/ic_attach_photo_white</item>
