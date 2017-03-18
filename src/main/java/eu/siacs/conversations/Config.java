@@ -61,13 +61,13 @@ public final class Config {
 	public static final int CONNECT_DISCO_TIMEOUT = 20;
 	public static final int MINI_GRACE_PERIOD = 750;
 
-	public static final int AVATAR_SIZE = 192;
+	public static final int AVATAR_SIZE = 512;
 	public static final Bitmap.CompressFormat AVATAR_FORMAT = Bitmap.CompressFormat.WEBP;
 
 	public static final int IMAGE_SIZE = 1920;
 	public static final Bitmap.CompressFormat IMAGE_FORMAT = Bitmap.CompressFormat.JPEG;
-	public static final int IMAGE_QUALITY = 75;
-	public static final int IMAGE_MAX_SIZE = 524288; //512KiB
+	public static final int IMAGE_QUALITY = 90;
+	public static final int IMAGE_MAX_SIZE = 1048576; //512KiB
 
 	public static final int MESSAGE_MERGE_WINDOW = 20;
 
