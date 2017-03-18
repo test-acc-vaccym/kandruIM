@@ -67,6 +67,12 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 		Message message = conversation.getLatestMessage();
 		
 		int unreadCount = conversation.unreadCount();
+		if (unreadCount > 0) {
+			unreadCountCustomView.setVisibility(View.VISIBLE);
+			unreadCountCustomView.setUnreadCount(unreadCount);
+		} else {
+			unreadCountCustomView.setVisibility(View.GONE);
+		}
 
 		if (!conversation.isRead()) {
 			convName.setTypeface(null, Typeface.BOLD);
@@ -85,13 +91,6 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 			Pair<String,Boolean> preview = UIHelper.getMessagePreview(activity,message);
 			mLastMessage.setVisibility(View.VISIBLE);
 			imagePreview.setVisibility(View.GONE);
-
-			if (unreadCount > 0) {
-				unreadCountCustomView.setVisibility(View.VISIBLE);
-				unreadCountCustomView.setUnreadCount(unreadCount);
-			} else {
-				unreadCountCustomView.setVisibility(View.GONE);
-			}
 			mLastMessage.setText(preview.first);
 
 			if (preview.second) {
