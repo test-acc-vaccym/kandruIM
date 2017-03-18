@@ -360,6 +360,7 @@ public class ConversationActivity extends XmppActivity
 				}
 				if (conversation.getMode() == Conversation.MODE_SINGLE || useSubjectToIdentifyConference()) {
 					ab.setTitle(conversation.getName());
+					ab.setSubtitle(UIHelper.lastseen(getApplicationContext(), conversation.getContact().isActive(), conversation.getContact().getLastseen()));
 				} else {
 					ab.setTitle(conversation.getJid().toBareJid().toString());
 				}
@@ -368,6 +369,7 @@ public class ConversationActivity extends XmppActivity
 					ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
 				}
 				ab.setTitle(R.string.app_name);
+				ab.setSubtitle(null);
 			}
 		}
 	}
