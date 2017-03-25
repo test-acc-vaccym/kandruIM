@@ -517,6 +517,8 @@ public class ConversationActivity extends XmppActivity
 						break;
 					case ATTACHMENT_CHOICE_TAKE_VIDEO:
 						Uri vuri = xmppConnectionService.getFileBackend().getTakeVideoUri();
+						intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+						intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 						intent.setAction(MediaStore.ACTION_VIDEO_CAPTURE);
 						intent.putExtra(MediaStore.EXTRA_OUTPUT, vuri);
 						intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
