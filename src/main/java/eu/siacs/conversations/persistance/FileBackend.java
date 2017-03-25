@@ -516,16 +516,14 @@ public class FileBackend {
 	}
 
 	public Uri getTakeVideoUri() {
-		StringBuilder pathBuilder = new StringBuilder();
-		pathBuilder.append(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM));
-		pathBuilder.append('/');
-		pathBuilder.append("Camera");
-		pathBuilder.append('/');
-		pathBuilder.append("VID_" + this.IMAGE_DATE_FORMAT.format(new Date()) + ".mp4");
-		Uri uri = Uri.parse("file://" + pathBuilder.toString());
-		File file = new File(uri.toString());
+		File file;
+		if (Config.ONLY_INTERNAL_STORAGE) {
+			file = new File(mXmppConnectionService.getCacheDir().getAbsolutePath(), "Camera/VID_" + this.IMAGE_DATE_FORMAT.format(new Date()) + ".mp4");
+		} else {
+			file = new File(getTakePhotoPath() + "VID_" + this.IMAGE_DATE_FORMAT.format(new Date()) + ".mp4");
+		}
 		file.getParentFile().mkdirs();
-		return uri;
+		return getUriForFile(mXmppConnectionService,file);
 	}
 
 	public Avatar getPepAvatar(Uri image, int size, Bitmap.CompressFormat format) {
