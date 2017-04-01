@@ -1724,9 +1724,12 @@ public class ConversationActivity extends XmppActivity
 					public void success(Message message) {
 						message.setEncryption(Message.ENCRYPTION_DECRYPTED);
 						xmppConnectionService.sendMessage(message);
-						if (mConversationFragment != null) {
-							mConversationFragment.messageSent();
-						}
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								mConversationFragment.messageSent();
+							}
+						});
 					}
 
 					@Override
@@ -1734,15 +1737,14 @@ public class ConversationActivity extends XmppActivity
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
+								mConversationFragment.doneSendingPgpMessage();
 								Toast.makeText(ConversationActivity.this,
 										R.string.unable_to_connect_to_keychain,
 										Toast.LENGTH_SHORT
 								).show();
 							}
 						});
-						if (mConversationFragment != null) {
-							mConversationFragment.doneSendingPgpMessage();
-						}
+
 					}
 				});
 	}
