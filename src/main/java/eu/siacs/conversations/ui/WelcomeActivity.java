@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.net.Uri;
 
 import java.util.List;
 
@@ -41,9 +42,8 @@ public class WelcomeActivity extends XmppActivity {
 		createAccount.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(WelcomeActivity.this, MagicCreateActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-				startActivity(intent);
+				Intent browseIntent= new Intent(Intent.ACTION_VIEW, Uri.parse("https://account.kandru.de"));
+				startActivity(browseIntent);
 			}
 		});
 		final Button useOwnProvider = (Button) findViewById(R.id.use_own_provider);

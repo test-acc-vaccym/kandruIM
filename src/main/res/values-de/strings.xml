@@ -602,7 +602,7 @@
   <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf kandru.de.¹\nWenn du kandru.de als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
   <string name="your_full_jid_will_be">Deine vollständige Jabber ID lautet: %s</string>
   <string name="create_account">Konto erstellen</string>
-  <string name="use_own_provider">Nutze eigenen Provider</string>
+  <string name="use_own_provider">Benutze existierendes Konto</string>
   <string name="pick_your_username">Wähle deinen Benutzernamen</string>
   <string name="pref_manually_change_presence">Ändere Status</string>
   <string name="pref_manually_change_presence_summary">Tippe auf deinen Avatar, um deinen Status zu ändern</string>
