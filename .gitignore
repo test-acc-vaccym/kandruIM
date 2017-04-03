@@ -41,3 +41,5 @@ proguard/
 
 import-summary.txt
 .navigation/
+CHANGELOG.md
+README.md

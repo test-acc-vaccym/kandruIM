@@ -1,5 +1,6 @@
 package eu.siacs.conversations.parser;
 
+import android.os.Build;
 import android.text.Html;
 import android.util.Log;
 import android.util.Pair;
@@ -116,7 +117,11 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			}
 			if (clientMightSendHtml(conversation.getAccount(), from)) {
 				Log.d(Config.LOGTAG,conversation.getAccount().getJid().toBareJid()+": received OTR message from bad behaving client. escaping HTML…");
-				body = Html.fromHtml(body).toString();
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+					body = Html.fromHtml(body,Html.FROM_HTML_MODE_LEGACY).toString();
+				} else {
+					body = Html.fromHtml(body).toString();
+				}
 			}
 
 			final OtrService otrService = conversation.getAccount().getOtrService();
@@ -606,10 +611,13 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			if (message.trusted() && message.treatAsDownloadable() != Message.Decision.NEVER && manager.getAutoAcceptFileSize() > 0) {
 				manager.createNewDownloadConnection(message);
 			} else if (notify) {
-				if (query == null) {
-					mXmppConnectionService.getNotificationService().push(message);
-				} else if (query.isCatchup()) { // mam catchup
+				if (query != null && query.isCatchup()) {
 					mXmppConnectionService.getNotificationService().pushFromBacklog(message);
+				} else if (account.getXmppConnection().isWaitingForSmCatchup()) {
+					account.getXmppConnection().incrementSmCatchupMessageCounter();
+					mXmppConnectionService.getNotificationService().pushFromBacklog(message);
+				} else {
+					mXmppConnectionService.getNotificationService().push(message);
 				}
 			}
 		} else if (!packet.hasChild("body")){ //no body

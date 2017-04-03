@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat.BigPictureStyle;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.RemoteInput;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
@@ -23,9 +24,12 @@ import android.util.Log;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +60,8 @@ public class NotificationService {
 	private Conversation mOpenConversation;
 	private boolean mIsInForeground;
 	private long mLastNotification;
+
+	private final HashMap<Conversation,AtomicInteger> mBacklogMessageCounter = new HashMap<>();
 
 	public NotificationService(final XmppConnectionService service) {
 		this.mXmppConnectionService = service;
@@ -97,8 +103,18 @@ public class NotificationService {
 	public void pushFromBacklog(final Message message) {
 		if (notify(message)) {
 			synchronized (notifications) {
+				getBacklogMessageCounter(message.getConversation()).incrementAndGet();
 				pushToStack(message);
 			}
+		}
+	}
+
+	private AtomicInteger getBacklogMessageCounter(Conversation conversation) {
+		synchronized (mBacklogMessageCounter) {
+			if (!mBacklogMessageCounter.containsKey(conversation)) {
+				mBacklogMessageCounter.put(conversation,new AtomicInteger(0));
+			}
+			return mBacklogMessageCounter.get(conversation);
 		}
 	}
 
@@ -115,16 +131,24 @@ public class NotificationService {
 			if (account == null || !notify) {
 				updateNotification(notify);
 			} else {
-				boolean hasPendingMessages = false;
-				for(ArrayList<Message> messages : notifications.values()) {
-					if (messages.size() > 0 && messages.get(0).getConversation().getAccount() == account) {
-						hasPendingMessages = true;
-						break;
-					}
-				}
-				updateNotification(hasPendingMessages);
+				updateNotification(getBacklogMessageCount(account) > 0);
 			}
 		}
+	}
+
+	private int getBacklogMessageCount(Account account) {
+		int count = 0;
+		synchronized (this.mBacklogMessageCounter) {
+			for(Iterator<Map.Entry<Conversation, AtomicInteger>> it = mBacklogMessageCounter.entrySet().iterator(); it.hasNext(); ) {
+				Map.Entry<Conversation, AtomicInteger> entry = it.next();
+				if (entry.getKey().getAccount() == account) {
+					count += entry.getValue().get();
+					it.remove();
+				}
+			}
+		}
+		Log.d(Config.LOGTAG,account.getJid().toBareJid()+": backlog message count="+count);
+		return count;
 	}
 
 	public void finishBacklog(boolean notify) {
@@ -174,6 +198,9 @@ public class NotificationService {
 	}
 
 	public void clear(final Conversation conversation) {
+		synchronized (this.mBacklogMessageCounter) {
+			this.mBacklogMessageCounter.remove(conversation);
+		}
 		synchronized (notifications) {
 			markAsReadIfHasDirectReply(conversation);
 			notifications.remove(conversation.getUuid());
@@ -197,7 +224,7 @@ public class NotificationService {
 	}
 
 	private void setNotificationColor(final Builder mBuilder) {
-		mBuilder.setColor(mXmppConnectionService.getResources().getColor(R.color.primary500));
+		mBuilder.setColor(ContextCompat.getColor(mXmppConnectionService, R.color.primary500));
 	}
 
 	public void updateNotification(final boolean notify) {
