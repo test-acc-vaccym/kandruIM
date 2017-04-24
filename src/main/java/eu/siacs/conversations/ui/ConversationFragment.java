@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v13.view.inputmethod.InputConnectionCompat;
@@ -34,7 +32,6 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -47,6 +44,7 @@ import net.java.otr4j.session.SessionStatus;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +74,7 @@ import eu.siacs.conversations.ui.adapter.MessageAdapter.OnContactPictureClicked;
 import eu.siacs.conversations.ui.adapter.MessageAdapter.OnContactPictureLongClicked;
 import eu.siacs.conversations.ui.widget.ListSelectionManager;
 import eu.siacs.conversations.utils.GeoHelper;
+import eu.siacs.conversations.utils.NickValidityChecker;
 import eu.siacs.conversations.utils.UIHelper;
 import eu.siacs.conversations.xmpp.XmppConnection;
 import eu.siacs.conversations.xmpp.chatstate.ChatState;
@@ -438,17 +437,17 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	}
 
 	public void setupIme() {
-		if (activity == null) {
-			return;
-		} else if (activity.usingEnterKey() && activity.enterIsSend()) {
-			mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_FLAG_MULTI_LINE));
-			mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE));
-		} else if (activity.usingEnterKey()) {
-			mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-			mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE));
-		} else {
-			mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-			mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+		if (activity != null) {
+			if (activity.usingEnterKey() && activity.enterIsSend()) {
+				mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_FLAG_MULTI_LINE));
+				mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE));
+			} else if (activity.usingEnterKey()) {
+				mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+				mEditMessage.setInputType(mEditMessage.getInputType() & (~InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE));
+			} else {
+				mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+				mEditMessage.setInputType(mEditMessage.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+			}
 		}
 	}
 
@@ -621,7 +620,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			MenuItem showErrorMessage = menu.findItem(R.id.show_error_message);
 			if (!treatAsFile
 					&& !GeoHelper.isGeoUri(m.getBody())
-					&& m.treatAsDownloadable() != Message.Decision.MUST) {
+					&& !m.treatAsDownloadable()) {
 				copyText.setVisible(true);
 				selectText.setVisible(ListSelectionManager.isSupported());
 			}
@@ -641,12 +640,11 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			}
 			if (m.hasFileOnRemoteHost()
 					|| GeoHelper.isGeoUri(m.getBody())
-					|| m.treatAsDownloadable() == Message.Decision.MUST
+					|| m.treatAsDownloadable()
 					|| (t != null && t instanceof HttpDownloadConnection)) {
 				copyUrl.setVisible(true);
 			}
-			if ((m.getType() == Message.TYPE_TEXT && t == null && m.treatAsDownloadable() != Message.Decision.NEVER)
-					|| (m.isFileOrImage() && t instanceof TransferablePlaceholder && m.hasFileOnRemoteHost())){
+			if ((m.isFileOrImage() && t instanceof TransferablePlaceholder && m.hasFileOnRemoteHost())) {
 				downloadFile.setVisible(true);
 				downloadFile.setTitle(activity.getString(R.string.download_x_file,UIHelper.getFileDescriptionString(activity, m)));
 			}
@@ -815,8 +813,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	}
 
 	private void downloadFile(Message message) {
-		activity.xmppConnectionService.getHttpConnectionManager()
-				.createNewDownloadConnection(message,true);
+		activity.xmppConnectionService.getHttpConnectionManager().createNewDownloadConnection(message,true);
 	}
 
 	private void cancelTransmission(Message message) {
@@ -860,16 +857,22 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		String oldString = editable.toString().trim();
 		final int pos = mEditMessage.getSelectionStart();
 		if (oldString.isEmpty() || pos == 0) {
-			mEditMessage.getText().insert(0, nick + ": ");
+			editable.insert(0, nick + ": ");
 		} else {
 			final char before = editable.charAt(pos - 1);
 			final char after = editable.length() > pos ? editable.charAt(pos) : '\0';
 			if (before == '\n') {
 				editable.insert(pos, nick + ": ");
 			} else {
-				editable.insert(pos,(Character.isWhitespace(before)? "" : " ") + nick + (Character.isWhitespace(after) ? "" : " "));
+				if (pos > 2 && editable.subSequence(pos-2,pos).toString().equals(": ")) {
+					if (NickValidityChecker.check(conversation,Arrays.asList(editable.subSequence(0,pos-2).toString().split(", ")))) {
+						editable.insert(pos - 2, ", " + nick);
+						return;
+					}
+				}
+				editable.insert(pos, (Character.isWhitespace(before) ? "" : " ") + nick + (Character.isWhitespace(after) ? "" : " "));
 				if (Character.isWhitespace(after)) {
-					mEditMessage.setSelection(mEditMessage.getSelectionStart()+1);
+					mEditMessage.setSelection(mEditMessage.getSelectionStart() + 1);
 				}
 			}
 		}
@@ -906,6 +909,9 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				updateChatState(this.conversation, msg);
 			}
 			this.conversation.trim();
+			this.mSendButton.setContentDescription(this.getActivity().getApplicationContext().getString(R.string.send_message_to_x,conversation.getName()));
+		} else {
+			this.mSendButton.setContentDescription(this.getActivity().getApplicationContext().getString(R.string.send_message));
 		}
 
 		this.conversation = conversation;
@@ -1053,7 +1059,11 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 					showSnackbar(R.string.joining_conference, 0, null);
 					break;
 				case SERVER_NOT_FOUND:
-					showSnackbar(R.string.remote_server_not_found,R.string.leave, leaveMuc);
+					if (conversation.receivedMessagesCount() > 0) {
+						showSnackbar(R.string.remote_server_not_found,R.string.try_again, joinMuc);
+					} else {
+						showSnackbar(R.string.remote_server_not_found, R.string.leave, leaveMuc);
+					}
 					break;
 				case PASSWORD_REQUIRED:
 					showSnackbar(R.string.conference_requires_password, R.string.enter_password, enterPassword);
@@ -1074,6 +1084,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 					showSnackbar(R.string.conference_shutdown, R.string.join, joinMuc);
 					break;
 				default:
+					hideSnackbar();
 					break;
 			}
 		} else if (account.hasPendingPgpIntent(conversation)) {

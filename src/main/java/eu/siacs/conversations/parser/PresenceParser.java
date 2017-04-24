@@ -54,6 +54,7 @@ public class PresenceParser extends AbstractParser implements
 
 	private void processConferencePresence(PresencePacket packet, Conversation conversation) {
 		MucOptions mucOptions = conversation.getMucOptions();
+		final Jid jid = conversation.getAccount().getJid();
 		final Jid from = packet.getFrom();
 		if (!from.isBareJid()) {
 			final String type = packet.getAttribute("type");
@@ -66,7 +67,8 @@ public class PresenceParser extends AbstractParser implements
 					if (item != null && !from.isBareJid()) {
 						mucOptions.setError(MucOptions.Error.NONE);
 						MucOptions.User user = parseItem(conversation, item, from);
-						if (codes.contains(MucOptions.STATUS_CODE_SELF_PRESENCE)) {
+						if (codes.contains(MucOptions.STATUS_CODE_SELF_PRESENCE)
+								|| ((codes.isEmpty() || codes.contains(MucOptions.STATUS_CODE_ROOM_CREATED)) && jid.equals(item.getAttributeAsJid("jid")))) {
 							mucOptions.setOnline();
 							mucOptions.setSelf(user);
 							if (mucOptions.onRenameListener != null) {
@@ -108,8 +110,7 @@ public class PresenceParser extends AbstractParser implements
 					}
 				}
 			} else if (type.equals("unavailable")) {
-				if (codes.contains(MucOptions.STATUS_CODE_SELF_PRESENCE) ||
-						packet.getFrom().equals(mucOptions.getConversation().getJid())) {
+				if (codes.contains(MucOptions.STATUS_CODE_SELF_PRESENCE)) {
 					if (codes.contains(MucOptions.STATUS_CODE_KICKED)) {
 						mucOptions.setError(MucOptions.Error.KICKED);
 					} else if (codes.contains(MucOptions.STATUS_CODE_BANNED)) {
@@ -253,7 +254,7 @@ public class PresenceParser extends AbstractParser implements
 			} else {
 				contact.setOption(Contact.Options.PENDING_SUBSCRIPTION_REQUEST);
 				final Conversation conversation = mXmppConnectionService.findOrCreateConversation(
-						account, contact.getJid().toBareJid(), false);
+						account, contact.getJid().toBareJid(), false, false);
 				final String statusMessage = packet.findChildContent("status");
 				if (statusMessage != null
 						&& !statusMessage.isEmpty()

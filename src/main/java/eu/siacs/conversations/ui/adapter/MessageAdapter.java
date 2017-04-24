@@ -95,7 +95,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 	private static final Linkify.MatchFilter WEBURL_MATCH_FILTER = new Linkify.MatchFilter() {
 		@Override
 		public boolean acceptMatch(CharSequence cs, int start, int end) {
-			return start < 1 || (cs.charAt(start-1) != '@' && !cs.subSequence(Math.max(0,start - 3),start).equals("://"));
+			return start < 1 || (cs.charAt(start-1) != '@' && cs.charAt(start-1) != '.' && !cs.subSequence(Math.max(0,start - 3),start).equals("://"));
 		}
 	};
 
@@ -188,7 +188,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 				filesize = params.size / (1024 * 1024)+ " MiB";
 			} else if (params.size >= 1024) {
 				filesize = params.size / 1024 + " KiB";
-			} else {
+			} else if (params.size > 0){
 				filesize = params.size + " B";
 			}
 			if (message.getTransferable() != null && message.getTransferable().getStatus() == Transferable.STATUS_FAILED) {
@@ -776,7 +776,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 				displayLocationMessage(viewHolder,message);
 			} else if (message.bodyIsHeart()) {
 				displayHeartMessage(viewHolder, message.getBody().trim());
-			} else if (message.treatAsDownloadable() == Message.Decision.MUST) {
+			} else if (message.treatAsDownloadable()) {
 				try {
 					URL url = new URL(message.getBody());
 					displayDownloadableMessage(viewHolder,

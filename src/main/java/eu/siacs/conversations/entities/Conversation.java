@@ -167,7 +167,7 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 			for (final Message message : this.messages) {
 				if (message.getUuid().equals(uuid)
 						&& message.getEncryption() != Message.ENCRYPTION_PGP
-						&& (message.getType() == Message.TYPE_IMAGE || message.getType() == Message.TYPE_FILE || message.treatAsDownloadable() != Message.Decision.NEVER)) {
+						&& (message.getType() == Message.TYPE_IMAGE || message.getType() == Message.TYPE_FILE || message.treatAsDownloadable())) {
 					return message;
 				}
 			}
@@ -287,6 +287,17 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 			}
 		}
 		return null;
+	}
+
+	public boolean hasMessageWithCounterpart(Jid counterpart) {
+		synchronized (this.messages) {
+			for(Message message : this.messages) {
+				if (counterpart.equals(message.getCounterpart())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public void populateWithMessages(final List<Message> messages) {
@@ -771,6 +782,7 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		if (this.bookmark != null) {
 			this.bookmark.setConversation(null);
 		}
+		this.bookmark = null;
 	}
 
 	public Bookmark getBookmark() {
@@ -993,6 +1005,18 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 			}
 			return count;
 		}
+	}
+
+	public int receivedMessagesCount() {
+		int count = 0;
+		synchronized (this.messages) {
+			for(Message message : messages) {
+				if (message.getStatus() == Message.STATUS_RECEIVED) {
+					++count;
+				}
+			}
+		}
+		return count;
 	}
 
 	private int sentMessagesCount() {

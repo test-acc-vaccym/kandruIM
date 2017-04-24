@@ -196,7 +196,7 @@ public class UIHelper {
 				} else {
 					return new Pair<>(context.getString(R.string.location), true);
 				}
-			} else if (message.treatAsDownloadable() == Message.Decision.MUST) {
+			} else if (message.treatAsDownloadable()) {
 				return new Pair<>(context.getString(R.string.x_file_offered_for_download,
 						getFileDescriptionString(context,message)),true);
 			} else {
@@ -231,7 +231,8 @@ public class UIHelper {
 
 	public static boolean isPositionFollowedByQuoteableCharacter(CharSequence body, int pos) {
 		return !isPositionFollowedByNumber(body, pos)
-				&& !isPositionFollowedByEmoticon(body,pos);
+				&& !isPositionFollowedByEmoticon(body,pos)
+				&& !isPositionFollowedByEquals(body,pos);
 	}
 
 	private static boolean isPositionFollowedByNumber(CharSequence body, int pos) {
@@ -243,10 +244,14 @@ public class UIHelper {
 			} else if (previousWasNumber && (c == '.' || c == ',')) {
 				previousWasNumber = false;
 			} else {
-				return Character.isWhitespace(c) && previousWasNumber;
+				return (Character.isWhitespace(c) || c == '%' || c == '+') && previousWasNumber;
 			}
 		}
 		return previousWasNumber;
+	}
+
+	private static boolean isPositionFollowedByEquals(CharSequence body, int pos) {
+		return body.length() > pos + 1 && body.charAt(pos+1) == '=';
 	}
 
 	private static boolean isPositionFollowedByEmoticon(CharSequence body, int pos) {

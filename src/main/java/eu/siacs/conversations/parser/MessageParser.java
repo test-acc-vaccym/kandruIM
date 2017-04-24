@@ -192,7 +192,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 
 		public boolean execute(Account account) {
 			if (jid != null) {
-				Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, jid, true);
+				Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, jid, true, false);
 				if (!conversation.getMucOptions().online()) {
 					conversation.getMucOptions().setPassword(password);
 					mXmppConnectionService.databaseBackend.updateConversation(conversation);
@@ -372,8 +372,8 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 		final Element mucUserElement = packet.findChild("x", "http://jabber.org/protocol/muc#user");
 		final String pgpEncrypted = packet.findChildContent("x", "jabber:x:encrypted");
 		final Element replaceElement = packet.findChild("replace", "urn:xmpp:message-correct:0");
-		final Element oob = packet.findChild("x", "jabber:x:oob");
-		final boolean isOob = oob!= null && body != null && body.equals(oob.findChildContent("url"));
+		final Element oob = packet.findChild("x", Namespace.OOB);
+		final String oobUrl = oob != null ? oob.findChildContent("url") : null;
 		final String replacementId = replaceElement == null ? null : replaceElement.getAttribute("id");
 		final Element axolotlEncrypted = packet.findChild(XmppAxolotlMessage.CONTAINERTAG, AxolotlService.PEP_PREFIX);
 		int status;
@@ -414,8 +414,8 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			mXmppConnectionService.updateConversationUi();
 		}
 
-		if ((body != null || pgpEncrypted != null || axolotlEncrypted != null) && !isMucStatusMessage) {
-			Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, counterpart.toBareJid(), isTypeGroupChat, false, query);
+		if ((body != null || pgpEncrypted != null || axolotlEncrypted != null || oobUrl != null) && !isMucStatusMessage) {
+			final Conversation conversation = mXmppConnectionService.findOrCreateConversation(account, counterpart.toBareJid(), isTypeGroupChat, false, query, false);
 			final boolean conversationMultiMode = conversation.getMode() == Conversation.MODE_MULTI;
 
 			if (serverMsgId == null) {
@@ -458,7 +458,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 					final Jid fallback = conversation.getMucOptions().getTrueCounterpart(counterpart);
 					origin = getTrueCounterpart(query != null ? mucUserElement : null, fallback);
 					if (origin == null) {
-						Log.d(Config.LOGTAG,"axolotl message in non anonymous conference received");
+						Log.d(Config.LOGTAG, "axolotl message in non anonymous conference received");
 						return;
 					}
 				} else {
@@ -471,6 +471,12 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				if (conversationMultiMode) {
 					message.setTrueCounterpart(origin);
 				}
+			} else if (body == null && oobUrl != null) {
+				message = new Message(conversation, oobUrl, Message.ENCRYPTION_NONE, status);
+				message.setOob(true);
+				if (CryptoHelper.isPgpEncryptedUrl(oobUrl)) {
+					message.setEncryption(Message.ENCRYPTION_DECRYPTED);
+				}
 			} else {
 				message = new Message(conversation, body, Message.ENCRYPTION_NONE, status);
 			}
@@ -480,7 +486,12 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 			message.setServerMsgId(serverMsgId);
 			message.setCarbon(isCarbon);
 			message.setTime(timestamp);
-			message.setOob(isOob);
+			if (body != null && body.equals(oobUrl)) {
+				message.setOob(true);
+				if (CryptoHelper.isPgpEncryptedUrl(oobUrl)) {
+					message.setEncryption(Message.ENCRYPTION_DECRYPTED);
+				}
+			}
 			message.markable = packet.hasChild("markable", "urn:xmpp:chat-markers:0");
 			if (conversationMultiMode) {
 				final Jid fallback = conversation.getMucOptions().getTrueCounterpart(counterpart);
@@ -608,7 +619,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 
 			mXmppConnectionService.databaseBackend.createMessage(message);
 			final HttpConnectionManager manager = this.mXmppConnectionService.getHttpConnectionManager();
-			if (message.trusted() && message.treatAsDownloadable() != Message.Decision.NEVER && manager.getAutoAcceptFileSize() > 0) {
+			if (message.trusted() && message.treatAsDownloadable() && manager.getAutoAcceptFileSize() > 0) {
 				manager.createNewDownloadConnection(message);
 			} else if (notify) {
 				if (query != null && query.isCatchup()) {
@@ -621,7 +632,7 @@ public class MessageParser extends AbstractParser implements OnMessagePacketRece
 				}
 			}
 		} else if (!packet.hasChild("body")){ //no body
-			Conversation conversation = mXmppConnectionService.find(account, from.toBareJid());
+			final Conversation conversation = mXmppConnectionService.find(account, from.toBareJid());
 			if (isTypeGroupChat) {
 				if (packet.hasChild("subject")) {
 					if (conversation != null && conversation.getMode() == Conversation.MODE_MULTI) {

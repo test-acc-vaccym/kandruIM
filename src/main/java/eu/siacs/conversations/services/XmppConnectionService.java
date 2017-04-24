@@ -148,6 +148,7 @@ public class XmppConnectionService extends Service {
 	}
 
 	public static final String ACTION_REPLY_TO_CONVERSATION = "reply_to_conversations";
+	public static final String ACTION_MARK_AS_READ = "mark_as_read";
 	public static final String ACTION_CLEAR_NOTIFICATION = "clear_notification";
 	public static final String ACTION_DISABLE_FOREGROUND = "disable_foreground";
 	public static final String ACTION_DISMISS_ERROR_NOTIFICATIONS = "dismiss_error";
@@ -672,6 +673,9 @@ public class XmppConnectionService extends Service {
 							directReply(c, body.toString(),intent.getBooleanExtra("dismiss_notification",false));
 						}
 					}
+					break;
+				case ACTION_MARK_AS_READ:
+					markRead(c, true);
 					break;
 				case AudioManager.RINGER_MODE_CHANGED_ACTION:
 					if (xaOnSilentMode()) {
@@ -1413,7 +1417,7 @@ public class XmppConnectionService extends Service {
 								if (conversation != null) {
 									conversation.setBookmark(bookmark);
 								} else if (bookmark.autojoin() && bookmark.getJid() != null && autojoin) {
-									conversation = findOrCreateConversation(account, bookmark.getJid(), true, true);
+									conversation = findOrCreateConversation(account, bookmark.getJid(), true, true, false);
 									conversation.setBookmark(bookmark);
 								}
 							}
@@ -1681,15 +1685,15 @@ public class XmppConnectionService extends Service {
 		return null;
 	}
 
-	public Conversation findOrCreateConversation(Account account, Jid jid, boolean muc) {
-		return this.findOrCreateConversation(account,jid,muc,false);
+	public Conversation findOrCreateConversation(Account account, Jid jid, boolean muc, final boolean async) {
+		return this.findOrCreateConversation(account,jid,muc,false, async);
 	}
 
-	public Conversation findOrCreateConversation(final Account account, final Jid jid, final boolean muc, final boolean joinAfterCreate) {
-		return this.findOrCreateConversation(account, jid, muc, joinAfterCreate, null);
+	public Conversation findOrCreateConversation(final Account account, final Jid jid, final boolean muc, final boolean joinAfterCreate, final boolean async) {
+		return this.findOrCreateConversation(account, jid, muc, joinAfterCreate, null, async);
 	}
 
-	public Conversation findOrCreateConversation(final Account account, final Jid jid, final boolean muc, final boolean joinAfterCreate, final MessageArchiveService.Query query) {
+	public Conversation findOrCreateConversation(final Account account, final Jid jid, final boolean muc, final boolean joinAfterCreate, final MessageArchiveService.Query query, final boolean async) {
 		synchronized (this.conversations) {
 			Conversation conversation = find(account, jid);
 			if (conversation != null) {
@@ -1728,7 +1732,7 @@ public class XmppConnectionService extends Service {
 				loadMessagesFromDb = false;
 			}
 			final Conversation c = conversation;
-			mDatabaseExecutor.execute(new Runnable() {
+			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 					if (loadMessagesFromDb) {
@@ -1752,7 +1756,12 @@ public class XmppConnectionService extends Service {
 						joinMuc(c);
 					}
 				}
-			});
+			};
+			if (async) {
+				mDatabaseExecutor.execute(runnable);
+			} else {
+				runnable.run();
+			}
 			this.conversations.add(conversation);
 			updateConversationUi();
 			return conversation;
@@ -2262,6 +2271,7 @@ public class XmppConnectionService extends Service {
 				public void onFetchFailed(final Conversation conversation, Element error) {
 					if (error != null && "remote-server-not-found".equals(error.getName())) {
 						conversation.getMucOptions().setError(MucOptions.Error.SERVER_NOT_FOUND);
+						updateConversationUi();
 					} else {
 						join(conversation);
 						fetchConferenceConfiguration(conversation);
@@ -2454,7 +2464,7 @@ public class XmppConnectionService extends Service {
 					return false;
 				}
 				final Jid jid = Jid.fromParts(new BigInteger(64, getRNG()).toString(Character.MAX_RADIX), server, null);
-				final Conversation conversation = findOrCreateConversation(account, jid, true, false);
+				final Conversation conversation = findOrCreateConversation(account, jid, true, false, true);
 				joinMuc(conversation, new OnConferenceJoined() {
 					@Override
 					public void onConferenceJoined(final Conversation conversation) {
