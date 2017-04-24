@@ -487,7 +487,7 @@
   <string name="select_image_and_crop">إختر صورة ثم قم بقصها</string>
   <string name="this_account_is_disabled">لقد قمت بتعطيل هذا الحساب</string>
   <string name="share_uri_with">شارك الرابط مع ...</string>
-  <string name="welcome_text">XMPP هو مزود بروتوكول مستقل. يمكنك استخدام هذا العميل مع أي خادم إكس أم بي بي اخترته. و لراحتك جعلنا من السهل إنشاء حساب على conversations.im¹؛ مزود خدمة يتناسب خصيصا للاستخدام مع تطبيق المحادثات Conversations.</string>
+  <string name="welcome_text">XMPP هو مزود بروتوكول مستقل. يمكنك استخدام هذا العميل مع أي خادم إكس أم بي بي اخترته. و لراحتك جعلنا من السهل إنشاء حساب على kandru-messenger.com¹؛ مزود خدمة يتناسب خصيصا للاستخدام مع تطبيق المحادثات KandruIM.</string>
   <string name="your_full_jid_will_be">سوف تكون هويتك الكاملة على جابر كالتالي : %s</string>
   <string name="create_account">إنشاء حساب</string>
   <string name="use_own_provider">إستخدم مزودي الخاص</string>
