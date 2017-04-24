@@ -59,8 +59,8 @@
 	<string name="unblock">Unblock</string>
 	<string name="save">Save</string>
 	<string name="ok">OK</string>
-	<string name="crash_report_title">Conversations has crashed</string>
-	<string name="crash_report_message">By sending in stack traces you are helping the ongoing development of Conversations\n<b>Warning:</b> This will use your XMPP account to send the stack trace to the developer.</string>
+	<string name="crash_report_title">KandruIM has crashed</string>
+	<string name="crash_report_message">By sending in stack traces you are helping the ongoing development of KandruIM\n<b>Warning:</b> This will use your XMPP account to send the stack trace to the developer.</string>
 	<string name="send_now">Send now</string>
 	<string name="send_never">Never ask again</string>
 	<string name="problem_connecting_to_account">Unable to connect to account</string>
@@ -81,6 +81,7 @@
 	<string name="also_end_conversation">End this conversation afterwards</string>
 	<string name="choose_presence">Choose device</string>
 	<string name="send_unencrypted_message">Send unencrypted message</string>
+	<string name="send_message">Send message</string>
 	<string name="send_message_to_x">Send message to %s</string>
 	<string name="send_otr_message">Send OTR encrypted message</string>
 	<string name="send_omemo_message">Send OMEMO encrypted message</string>
@@ -90,16 +91,16 @@
 	<string name="send_unencrypted">Send unencrypted</string>
 	<string name="decryption_failed">Decryption failed. Maybe you don’t have the proper private key.</string>
 	<string name="openkeychain_required">OpenKeychain</string>
-	<string name="openkeychain_required_long">Conversations utilizes a third party app called <b>OpenKeychain</b> to encrypt and decrypt messages and to manage your public keys.\n\nOpenKeychain is licensed under GPLv3 and available on F-Droid and Google Play.\n\n<small>(Please restart Conversations afterwards.)</small></string>
+	<string name="openkeychain_required_long">KandruIM utilizes a third party app called <b>OpenKeychain</b> to encrypt and decrypt messages and to manage your public keys.\n\nOpenKeychain is licensed under GPLv3 and available on F-Droid and Google Play.\n\n<small>(Please restart KandruIM afterwards.)</small></string>
 	<string name="restart">Restart</string>
 	<string name="install">Install</string>
 	<string name="openkeychain_not_installed">Please install OpenKeychain</string>
 	<string name="offering">offering…</string>
 	<string name="waiting">waiting…</string>
 	<string name="no_pgp_key">No OpenPGP Key found</string>
-	<string name="contact_has_no_pgp_key">Conversations is unable to encrypt your messages because your contact is not announcing his or hers public key.\n\n<small>Please ask your contact to setup OpenPGP.</small></string>
+	<string name="contact_has_no_pgp_key">KandruIM is unable to encrypt your messages because your contact is not announcing his or hers public key.\n\n<small>Please ask your contact to setup OpenPGP.</small></string>
 	<string name="no_pgp_keys">No OpenPGP Keys found</string>
-	<string name="contacts_have_no_pgp_keys">Conversations is unable to encrypt your messages because your contacts are not announcing their public key.\n\n<small>Please ask your contacts to setup OpenPGP.</small></string>
+	<string name="contacts_have_no_pgp_keys">KandruIM is unable to encrypt your messages because your contacts are not announcing their public key.\n\n<small>Please ask your contacts to setup OpenPGP.</small></string>
 	<string name="pref_general">General</string>
 	<string name="pref_xmpp_resource">XMPP resource</string>
 	<string name="pref_xmpp_resource_summary">The name this client identifies itself with</string>
@@ -118,10 +119,10 @@
 	<string name="pref_sound">Ringtone</string>
 	<string name="pref_sound_summary">Play sound when a new message arrives</string>
 	<string name="pref_notification_grace_period">Grace Period</string>
-	<string name="pref_notification_grace_period_summary">The length of time Conversations keeps quiet after seeing activity on another device</string>
+	<string name="pref_notification_grace_period_summary">The length of time KandruIM keeps quiet after seeing activity on another device</string>
 	<string name="pref_advanced_options">Advanced</string>
 	<string name="pref_never_send_crash">Never send crash reports</string>
-	<string name="pref_never_send_crash_summary">By sending in stack traces you are helping the ongoing development of Conversations</string>
+	<string name="pref_never_send_crash_summary">By sending in stack traces you are helping the ongoing development of KandruIM</string>
 	<string name="pref_confirm_messages">Confirm Messages</string>
 	<string name="pref_confirm_messages_summary">Let your contacts know when you have received and read their messages</string>
 	<string name="pref_ui_options">UI</string>
@@ -302,7 +303,7 @@
 	<string name="pref_dont_save_encrypted_summary">Warning: This could lead to message loss</string>
 	<string name="pref_expert_options">Expert settings</string>
 	<string name="pref_expert_options_summary">Please be careful with these</string>
-	<string name="title_activity_about">About Conversations</string>
+	<string name="title_activity_about">About KandruIM</string>
 	<string name="pref_about_conversations_summary">Build and licensing information</string>
 	<string name="pref_about_message" translatable="false">
 			KandruIM • Open Source XMPP Messenger inspired by siacs (https://github.com/siacs)
@@ -497,7 +498,7 @@
 	<string name="vcard">Contact</string>
 	<string name="received_x_file">Received %s</string>
 	<string name="disable_foreground_service">Disable foreground service</string>
-	<string name="touch_to_open_conversations">Touch to open Conversations</string>
+	<string name="touch_to_open_conversations">Touch to open KandruIM</string>
 	<string name="avatar_has_been_published">Avatar has been published!</string>
 	<string name="sending_x_file">Sending %s</string>
 	<string name="offering_x_file">Offering %s</string>
@@ -598,9 +599,9 @@
 	<string name="shared_image_with_x">Shared image with %s</string>
 	<string name="shared_images_with_x">Shared images with %s</string>
 	<string name="shared_text_with_x">Shared text with %s</string>
-	<string name="no_storage_permission">Conversations need access to external storage</string>
+	<string name="no_storage_permission">KandruIM need access to external storage</string>
 	<string name="sync_with_contacts">Synchronize with contacts</string>
-	<string name="sync_with_contacts_long">Conversations wants to match your XMPP roster with your contacts to show their full names and avatars.\n\nConversations will only read your contacts and match them locally without uploading them to your server.\n\nYou will now be asked to grant permission to access your contacts.</string>
+	<string name="sync_with_contacts_long">KandruIM wants to match your XMPP roster with your contacts to show their full names and avatars.\n\nKandruIM will only read your contacts and match them locally without uploading them to your server.\n\nYou will now be asked to grant permission to access your contacts.</string>
 	<string name="certificate_information">Certificate Information</string>
 	<string name="certificate_subject">Subject</string>
 	<string name="certificate_issuer">Issuer</string>
@@ -618,8 +619,8 @@
 	<string name="always">Always</string>
 	<string name="automatically">Automatically</string>
 	<string name="battery_optimizations_enabled">Battery optimizations enabled</string>
-	<string name="battery_optimizations_enabled_explained">Your device is doing some heavy battery optimizations on Conversations that might lead to delayed notifications or even message loss.\nIt is recommended to disable those.</string>
-	<string name="battery_optimizations_enabled_dialog">Your device is doing some heavy battery optimizations on Conversations that might lead to delayed notifications or even message loss.\n\nYou will now be asked to disable those.</string>
+	<string name="battery_optimizations_enabled_explained">Your device is doing some heavy battery optimizations on KandruIM that might lead to delayed notifications or even message loss.\nIt is recommended to disable those.</string>
+	<string name="battery_optimizations_enabled_dialog">Your device is doing some heavy battery optimizations on KandruIM that might lead to delayed notifications or even message loss.\n\nYou will now be asked to disable those.</string>
 	<string name="disable">Disable</string>
 	<string name="selection_too_large">The selected area is too large</string>
 	<string name="no_accounts">(No activated accounts)</string>
@@ -664,7 +665,7 @@
 	<string name="gp_medium">Medium</string>
 	<string name="gp_long">Long</string>
 	<string name="pref_broadcast_last_activity">Broadcast Last User Interaction</string>
-	<string name="pref_broadcast_last_activity_summary">Let all your contacts know when you use Conversations</string>
+	<string name="pref_broadcast_last_activity_summary">Let all your contacts know when you use KandruIM</string>
 	<string name="pref_privacy">Privacy</string>
 	<string name="pref_theme_options">Theme</string>
 	<string name="pref_theme_options_summary">Select the color palette</string>
@@ -700,8 +701,8 @@
 	<string name="show_error_message">Show error message</string>
 	<string name="error_message">Error Message</string>
 	<string name="data_saver_enabled">Data saver enabled</string>
-	<string name="data_saver_enabled_explained">Your operating system is restricting Conversations from accessing the Internet when in background. To receive notifications of new messages you should allow Conversations unrestricted access when Data saver is on.\nConversations will still make an effort to save data when possible.</string>
-	<string name="device_does_not_support_data_saver">Your device does not support disabling Data saver for Conversations.</string>
+	<string name="data_saver_enabled_explained">Your operating system is restricting KandruIM from accessing the Internet when in background. To receive notifications of new messages you should allow KandruIM unrestricted access when Data saver is on.\nKandruIM will still make an effort to save data when possible.</string>
+	<string name="device_does_not_support_data_saver">Your device does not support disabling Data saver for KandruIM.</string>
 	<string name="error_unable_to_create_temporary_file">Unable to create temporary file</string>
 	<string name="this_device_has_been_verified">This device has been verified</string>
 	<string name="copy_fingerprint">Copy fingerprint</string>

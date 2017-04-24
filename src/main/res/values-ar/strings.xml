@@ -185,6 +185,7 @@
   <string name="muc_details_other_members">المشتركين</string>
   <string name="server_info_show_more">معلومات عن المضيف</string>
   <string name="server_info_mam">XEP-0313: إدارة أرشيف الرسائل</string>
+  <string name="server_info_carbon_messages">XEP-0280: نُسَخ كربونية</string>
   <string name="server_info_csi">XEP-0352: مؤشر حالة العميل</string>
   <string name="server_info_blocking">XEP-0191: بروتوكول حظر الاتصالات</string>
   <string name="server_info_roster_version">XEP-0237: قائمة ترقيم الإصدارات</string>
@@ -487,7 +488,7 @@
   <string name="select_image_and_crop">إختر صورة ثم قم بقصها</string>
   <string name="this_account_is_disabled">لقد قمت بتعطيل هذا الحساب</string>
   <string name="share_uri_with">شارك الرابط مع ...</string>
-  <string name="welcome_text">XMPP هو مزود بروتوكول مستقل. يمكنك استخدام هذا العميل مع أي خادم إكس أم بي بي اخترته. و لراحتك جعلنا من السهل إنشاء حساب على conversations.im¹؛ مزود خدمة يتناسب خصيصا للاستخدام مع تطبيق المحادثات Conversations.</string>
+  <string name="welcome_text">XMPP هو مزود بروتوكول مستقل. يمكنك استخدام هذا العميل مع أي خادم إكس أم بي بي اخترته. و لراحتك جعلنا من السهل إنشاء حساب على kandru-messenger.com¹؛ مزود خدمة يتناسب خصيصا للاستخدام مع تطبيق المحادثات KandruIM.</string>
   <string name="your_full_jid_will_be">سوف تكون هويتك الكاملة على جابر كالتالي : %s</string>
   <string name="create_account">إنشاء حساب</string>
   <string name="use_own_provider">إستخدم مزودي الخاص</string>
@@ -556,5 +557,6 @@
   <string name="pref_automatically_delete_messages">الحذف الآلي للرسائل</string>
   <string name="encrypting_message">تشفير الرسالة</string>
   <string name="transcoding_video_progress">جاري ضغط الفيديو (%s%% تم)</string>
+  <string name="contact_blocked_past_tense">جهة الاتصال محجوبه</string>
   <string name="pref_notifications_from_strangers">الإشعارات من طرف غرباء</string>
 </resources>
