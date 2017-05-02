@@ -176,7 +176,7 @@
 	<string name="republish_pgp_keys">Remember to republish your OpenPGP public keys!</string>
 	<string name="mgmt_account_enable">Enable account</string>
 	<string name="mgmt_account_are_you_sure">Are you sure?</string>
-	<string name="mgmt_account_delete_confirm_text">If you delete your account your entire conversation history will be lost</string>
+	<string name="mgmt_account_delete_confirm_text">If you delete your account, your entire conversation history will be lost</string>
 	<string name="attach_record_voice">Record voice</string>
 	<string name="account_settings_jabber_id">Jabber ID</string>
 	<string name="block_jabber_id">Block Jabber ID</string>
@@ -366,7 +366,6 @@
 	<string name="check_x_filesize">Check %s size</string>
 	<string name="check_x_filesize_on_host">Check %1$s size on %2$s</string>
 	<string name="message_options">Message options</string>
-	<string name="copy_text">Copy text</string>
 	<string name="select_text">Select text</string>
 	<string name="quote">Quote</string>
 	<string name="copy_original_url">Copy original URL</string>
@@ -753,4 +752,5 @@
 	<string name="block_stranger">Block stranger</string>
 	<string name="block_entire_domain">Block entire domain</string>
 	<string name="online_right_now">online right now</string>
+	<string name="retry_decryption">Retry decryption</string>
 </resources>

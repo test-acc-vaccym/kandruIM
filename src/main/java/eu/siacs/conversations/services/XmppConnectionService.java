@@ -675,7 +675,7 @@ public class XmppConnectionService extends Service {
 					}
 					break;
 				case ACTION_MARK_AS_READ:
-					markRead(c, true);
+					sendReadMarker(c);
 					break;
 				case AudioManager.RINGER_MODE_CHANGED_ACTION:
 					if (xaOnSilentMode()) {
@@ -1450,9 +1450,15 @@ public class XmppConnectionService extends Service {
 				accountLookupTable.put(account.getUuid(), account);
 			}
 			this.conversations.addAll(databaseBackend.getConversations(Conversation.STATUS_AVAILABLE));
-			for (Conversation conversation : this.conversations) {
+			for(Iterator<Conversation> iterator = conversations.listIterator(); iterator.hasNext();) {
+				Conversation conversation = iterator.next();
 				Account account = accountLookupTable.get(conversation.getAccountUuid());
-				conversation.setAccount(account);
+				if (account != null) {
+					conversation.setAccount(account);
+				} else {
+					Log.e(Config.LOGTAG,"unable to restore Conversations with "+conversation.getJid());
+					iterator.remove();
+				}
 			}
 			Runnable runnable = new Runnable() {
 				@Override
@@ -2227,7 +2233,7 @@ public class XmppConnectionService extends Service {
 					final MucOptions mucOptions = conversation.getMucOptions();
 					final Jid joinJid = mucOptions.getSelf().getFullJid();
 					Log.d(Config.LOGTAG, account.getJid().toBareJid().toString() + ": joining conversation " + joinJid.toString());
-					PresencePacket packet = mPresenceGenerator.selfPresence(account, Presence.Status.ONLINE, mucOptions.nonanonymous());
+					PresencePacket packet = mPresenceGenerator.selfPresence(account, Presence.Status.ONLINE, mucOptions.nonanonymous() || onConferenceJoined != null);
 					packet.setTo(joinJid);
 					Element x = packet.addChild("x", "http://jabber.org/protocol/muc");
 					if (conversation.getMucOptions().getPassword() != null) {
