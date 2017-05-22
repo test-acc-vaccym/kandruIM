@@ -159,7 +159,7 @@
 	<string name="account_status_regis_conflict">Username already in use</string>
 	<string name="account_status_regis_success">Registration completed</string>
 	<string name="account_status_regis_not_sup">Server does not support registration</string>
-	<string name="account_status_security_error">Security error</string>
+	<string name="account_status_tls_error">TLS error</string>
 	<string name="account_status_policy_violation">Policy violation</string>
 	<string name="account_status_incompatible_server">Incompatible server</string>
 	<string name="account_status_stream_error">Stream error</string>
@@ -172,6 +172,8 @@
 	<string name="mgmt_account_disable">Temporarily disable</string>
 	<string name="mgmt_account_publish_avatar">Publish avatar</string>
 	<string name="mgmt_account_publish_pgp">Publish OpenPGP public key</string>
+	<string name="unpublish_pgp">Remove OpenPGP public key</string>
+	<string name="unpublish_pgp_message">Are you sure you want to remove your OpenPGP public key from your presence announcement?\nYour contacts will no longer be able to send you OpenPGP encrypted messages.</string>
 	<string name="openpgp_has_been_published">OpenPGP public key has been published.</string>
 	<string name="republish_pgp_keys">Remember to republish your OpenPGP public keys!</string>
 	<string name="mgmt_account_enable">Enable account</string>
@@ -753,4 +755,6 @@
 	<string name="block_entire_domain">Block entire domain</string>
 	<string name="online_right_now">online right now</string>
 	<string name="retry_decryption">Retry decryption</string>
+	<string name="session_failure">Session failure</string>
+	<string name="downgrade_attack">Downgrade attack</string>
 </resources>
