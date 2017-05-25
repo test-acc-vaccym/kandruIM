@@ -64,6 +64,7 @@ import eu.siacs.conversations.entities.Account;
 import eu.siacs.conversations.entities.Message;
 import eu.siacs.conversations.entities.ServiceDiscoveryResult;
 import eu.siacs.conversations.generator.IqGenerator;
+import eu.siacs.conversations.services.NotificationService;
 import eu.siacs.conversations.services.XmppConnectionService;
 import eu.siacs.conversations.utils.DNSHelper;
 import eu.siacs.conversations.utils.SSLSocketHelper;
@@ -161,7 +162,8 @@ public class XmppConnection implements Runnable {
 
 		@Override
 		public String[] getClientAliases(String s, Principal[] principals) {
-			return new String[0];
+			final String alias = account.getPrivateKeyAlias();
+			return alias != null ? new String[]{alias} : new String[0];
 		}
 
 		@Override
@@ -216,25 +218,29 @@ public class XmppConnection implements Runnable {
 		mXmppConnectionService = service;
 	}
 
-	protected synchronized void changeStatus(final Account.State nextStatus) {
-		if (Thread.currentThread().isInterrupted()) {
-			Log.d(Config.LOGTAG,account.getJid().toBareJid()+": not changing status to "+nextStatus+" because thread was interrupted");
-			return;
-		}
-		if (account.getStatus() != nextStatus) {
-			if ((nextStatus == Account.State.OFFLINE)
-					&& (account.getStatus() != Account.State.CONNECTING)
-					&& (account.getStatus() != Account.State.ONLINE)
-					&& (account.getStatus() != Account.State.DISABLED)) {
+	protected void changeStatus(final Account.State nextStatus) {
+		synchronized (this) {
+			if (Thread.currentThread().isInterrupted()) {
+				Log.d(Config.LOGTAG, account.getJid().toBareJid() + ": not changing status to " + nextStatus + " because thread was interrupted");
 				return;
-					}
-			if (nextStatus == Account.State.ONLINE) {
-				this.attempt = 0;
 			}
-			account.setStatus(nextStatus);
-			if (statusListener != null) {
-				statusListener.onStatusChanged(account);
+			if (account.getStatus() != nextStatus) {
+				if ((nextStatus == Account.State.OFFLINE)
+						&& (account.getStatus() != Account.State.CONNECTING)
+						&& (account.getStatus() != Account.State.ONLINE)
+						&& (account.getStatus() != Account.State.DISABLED)) {
+					return;
+				}
+				if (nextStatus == Account.State.ONLINE) {
+					this.attempt = 0;
+				}
+				account.setStatus(nextStatus);
+			} else {
+				return;
 			}
+		}
+		if (statusListener != null) {
+			statusListener.onStatusChanged(account);
 		}
 	}
 
@@ -616,14 +622,19 @@ public class XmppConnection implements Runnable {
 				final AckPacket ack = new AckPacket(this.stanzasReceived, smVersion);
 				tagWriter.writeStanzaAsync(ack);
 			} else if (nextTag.isStart("a")) {
-				synchronized (account) {
+				boolean accountUiNeedsRefresh = false;
+				synchronized (NotificationService.CATCHUP_LOCK) {
 					if (mWaitingForSmCatchup.compareAndSet(true, false)) {
 						int count = mSmCatchupMessageCounter.get();
 						Log.d(Config.LOGTAG, account.getJid().toBareJid() + ": SM catchup complete (" + count + ")");
+						accountUiNeedsRefresh = true;
 						if (count > 0) {
 							mXmppConnectionService.getNotificationService().finishBacklog(true, account);
 						}
 					}
+				}
+				if (accountUiNeedsRefresh) {
+					mXmppConnectionService.updateAccountUi();
 				}
 				final Element ack = tagReader.readElement(nextTag);
 				lastPacketReceived = SystemClock.elapsedRealtime();
@@ -1033,7 +1044,13 @@ public class XmppConnection implements Runnable {
 				} else {
 					Log.d(Config.LOGTAG, account.getJid() + ": disconnecting because of bind failure (" + packet.toString());
 				}
-				account.setResource(account.getResource().split("\\.")[0]);
+				final Element error = packet.findChild("error");
+				final String resource = account.getResource().split("\\.")[0];
+				if (packet.getType() == IqPacket.TYPE.ERROR && error != null && error.hasChild("conflict")) {
+					account.setResource(resource + "." + nextRandomId());
+				} else {
+					account.setResource(resource);
+				}
 				throw new StateChangingError(Account.State.BIND_FAILURE);
 			}
 		});
