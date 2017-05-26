@@ -749,4 +749,6 @@
 	<string name="retry_decryption">Retry decryption</string>
 	<string name="session_failure">Session failure</string>
 	<string name="sasl_downgrade">Downgraded SASL mechanism</string>
+	<string name="downgrade_attack">Downgrade attack</string>
+	<string name="verify_rtt">Verify RTT Support</string>
 </resources>
