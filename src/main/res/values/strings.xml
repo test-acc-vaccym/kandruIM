@@ -751,4 +751,6 @@
 	<string name="sasl_downgrade">Downgraded SASL mechanism</string>
 	<string name="downgrade_attack">Downgrade attack</string>
 	<string name="verify_rtt">Verify RTT Support</string>
+	<string name="pref_broadcast_rtt">Real Time Text</string>
+	<string name="pref_broadcast_rtt_summary">Send and recieve real time text messages</string>
 </resources>
