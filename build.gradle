@@ -59,7 +59,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 217
-        versionName "1.18.5"
+        versionName "1.0.0"
         archivesBaseName += "-$versionName"
         applicationId "eu.kandru.kandruIM"
     }
