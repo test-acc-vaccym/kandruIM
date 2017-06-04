@@ -65,6 +65,7 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import de.duenndns.ssl.MemorizingTrustManager;
@@ -182,8 +183,9 @@ public class XmppConnectionService extends Service {
 	};
 	private FileBackend fileBackend = new FileBackend(this);
 	private MemorizingTrustManager mMemorizingTrustManager;
-	private NotificationService mNotificationService = new NotificationService(
-			this);
+	private NotificationService mNotificationService = new NotificationService(this);
+	private ShortcutService mShortcutService = new ShortcutService(this);
+	private AtomicBoolean mInitialAddressbookSyncCompleted = new AtomicBoolean(false);
 	private OnMessagePacketReceived mMessageParser = new MessageParser(this);
 	private OnPresencePacketReceived mPresenceParser = new PresenceParser(this);
 	private IqParser mIqParser = new IqParser(this);
@@ -997,12 +999,9 @@ public class XmppConnectionService extends Service {
 		Log.d(Config.LOGTAG,"restoring accounts...");
 		this.accounts = databaseBackend.getAccounts();
 
-		if (Config.FREQUENT_RESTARTS_THRESHOLD != 0
-				&& Config.FREQUENT_RESTARTS_DETECTION_WINDOW != 0
-				&& !keepForegroundService()
-				&& databaseBackend.startTimeCountExceedsThreshold()) {
+		if (this.accounts.size() == 0 && Arrays.asList("Sony","Sony Ericsson").contains(Build.MANUFACTURER)) {
 			getPreferences().edit().putBoolean(SettingsActivity.KEEP_FOREGROUND_SERVICE,true).commit();
-			Log.d(Config.LOGTAG,"number of restarts exceeds threshold. enabling foreground service");
+			Log.d(Config.LOGTAG,Build.MANUFACTURER+" is on blacklist. enabling foreground service");
 		}
 
 		restoreFromDatabase();
@@ -1105,7 +1104,6 @@ public class XmppConnectionService extends Service {
 
 	private void logoutAndSave(boolean stop) {
 		int activeAccounts = 0;
-		databaseBackend.clearStartTimeCounter(true); // regular swipes don't count towards restart counter
 		for (final Account account : accounts) {
 			if (account.getStatus() != Account.State.DISABLED) {
 				activeAccounts++;
@@ -1553,6 +1551,7 @@ public class XmppConnectionService extends Service {
 							}
 						}
 						Log.d(Config.LOGTAG, "finished merging phone contacts");
+						mShortcutService.refresh(mInitialAddressbookSyncCompleted.compareAndSet(false,true));
 						updateAccountUi();
 					}
 				});
@@ -3290,6 +3289,10 @@ public class XmppConnectionService extends Service {
 		return getPreferences().getBoolean(SettingsActivity.BROADCAST_LAST_ACTIVITY, false);
 	}
 
+	public boolean useRealTimeText() {
+		return getPreferences().getBoolean(SettingsActivity.REAL_TIME_TEXT, false);
+	}
+
 	public int unreadCount() {
 		int count = 0;
 		for (Conversation conversation : getConversations()) {
@@ -3503,7 +3506,8 @@ public class XmppConnectionService extends Service {
 					mucServers.add(server);
 				}
 				for(Bookmark bookmark : account.getBookmarks()) {
-					final String s = bookmark.getJid().getDomainpart();
+					final Jid jid = bookmark.getJid();
+					final String s = jid == null ? null : jid.getDomainpart();
 					if (s != null && !mucServers.contains(s)) {
 						mucServers.add(s);
 					}
@@ -3616,10 +3620,11 @@ public class XmppConnectionService extends Service {
 		return this.mMessageArchiveService;
 	}
 
-	public List<Contact> findContacts(Jid jid) {
+	public List<Contact> findContacts(Jid jid, String accountJid) {
 		ArrayList<Contact> contacts = new ArrayList<>();
 		for (Account account : getAccounts()) {
-			if (!account.isOptionSet(Account.OPTION_DISABLED)) {
+			if (!account.isOptionSet(Account.OPTION_DISABLED)
+					&& (accountJid == null || accountJid.equals(account.getJid().toBareJid().toString()))) {
 				Contact contact = account.getRoster().getContactFromRoster(jid);
 				if (contact != null) {
 					contacts.add(contact);
@@ -3676,7 +3681,7 @@ public class XmppConnectionService extends Service {
 			clearDate = System.currentTimeMillis();
 			reference = null;
 		}
-		conversation.clearMessages();
+		conversation.clearMessages(fileBackend);
 		conversation.setHasMessagesLeftOnServer(false); //avoid messages getting loaded through mam
 		conversation.setLastClearHistory(clearDate,reference);
 		Runnable runnable = new Runnable() {
@@ -3902,15 +3907,6 @@ public class XmppConnectionService extends Service {
 		conversation.setBookmark(bookmark);
 	}
 
-	public void clearStartTimeCounter() {
-		mDatabaseExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				databaseBackend.clearStartTimeCounter(false);
-			}
-		});
-	}
-
 	public boolean verifyFingerprints(Contact contact, List<XmppUri.Fingerprint> fingerprints) {
 		boolean needsRosterWrite = false;
 		boolean performedVerification = false;
@@ -3962,6 +3958,10 @@ public class XmppConnectionService extends Service {
 
 	public boolean blindTrustBeforeVerification() {
 		return getPreferences().getBoolean(SettingsActivity.BLIND_TRUST_BEFORE_VERIFICATION, true);
+	}
+
+	public ShortcutService getShortcutService() {
+		return mShortcutService;
 	}
 
 	public interface OnMamPreferencesFetched {
