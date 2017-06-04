@@ -3289,10 +3289,6 @@ public class XmppConnectionService extends Service {
 		return getPreferences().getBoolean(SettingsActivity.BROADCAST_LAST_ACTIVITY, false);
 	}
 
-	public boolean useRealTimeText() {
-		return getPreferences().getBoolean(SettingsActivity.REAL_TIME_TEXT, false);
-	}
-
 	public int unreadCount() {
 		int count = 0;
 		for (Conversation conversation : getConversations()) {

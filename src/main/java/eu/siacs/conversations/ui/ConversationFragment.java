@@ -76,7 +76,6 @@ import eu.siacs.conversations.ui.widget.ListSelectionManager;
 import eu.siacs.conversations.utils.GeoHelper;
 import eu.siacs.conversations.utils.NickValidityChecker;
 import eu.siacs.conversations.utils.UIHelper;
-import eu.siacs.conversations.xml.Namespace;
 import eu.siacs.conversations.xmpp.XmppConnection;
 import eu.siacs.conversations.xmpp.chatstate.ChatState;
 import eu.siacs.conversations.xmpp.jid.Jid;
@@ -122,7 +121,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	protected MessageAdapter messageListAdapter;
 	private EditMessage mEditMessage;
 	private ImageButton mSendButton;
-    private ImageButton rttStatusButton;
 	private RelativeLayout snackbar;
 	private TextView snackbarMessage;
 	private TextView snackbarAction;
@@ -328,17 +326,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			return true;
 		}
 	};
-	private OnClickListener rttStatusCheckListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			Contact contact = conversation == null ? null : conversation.getContact();
-            if (contact!=null && contact.getPresences().supports(Namespace.RTT)) {
-                Toast.makeText(activity, "RTT Support", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(activity, "No RTT Support", Toast.LENGTH_SHORT).show();
-            }
-		}
-	};
 	private OnClickListener mSendButtonListener = new OnClickListener() {
 
 		@Override
@@ -486,9 +473,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 
 		mSendButton = (ImageButton) view.findViewById(R.id.textSendButton);
 		mSendButton.setOnClickListener(this.mSendButtonListener);
-
-        rttStatusButton = (ImageButton) view.findViewById(R.id.rttToggleButton);
-        rttStatusButton.setOnClickListener(this.rttStatusCheckListener);
 
 		snackbar = (RelativeLayout) view.findViewById(R.id.snackbar);
 		snackbarMessage = (TextView) view.findViewById(R.id.snackbar_message);
