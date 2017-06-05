@@ -832,9 +832,7 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
             case Intent.ACTION_VIEW:
                 Uri uri = intent.getData();
                 if (uri != null) {
-                    Invite invite = new Invite(intent.getData(),false);
-                    invite.account = intent.getStringExtra("account");
-                    return invite.invite();
+                    return new Invite(intent.getData(),false).invite();
                 } else {
                     return false;
                 }
@@ -873,7 +871,7 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
             finish();
             return true;
         }
-        List<Contact> contacts = xmppConnectionService.findContacts(invite.getJid(),invite.account);
+        List<Contact> contacts = xmppConnectionService.findContacts(invite.getJid());
         if (invite.isMuc()) {
             Conversation muc = xmppConnectionService.findFirstMuc(invite.getJid());
             if (muc != null) {
@@ -895,9 +893,6 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
                     if(xmppConnectionService.verifyFingerprints(contact, invite.getFingerprints())) {
                         Toast.makeText(this,R.string.verified_fingerprints,Toast.LENGTH_SHORT).show();
                     }
-                }
-                if (invite.account != null) {
-                    xmppConnectionService.getShortcutService().report(contact);
                 }
                 switchToConversation(contact, invite.getBody());
             }
@@ -1187,8 +1182,6 @@ public class StartConversationActivity extends XmppActivity implements OnRosterU
         public Invite(Uri uri, boolean safeSource) {
             super(uri,safeSource);
         }
-
-        public String account;
 
         boolean invite() {
             if (getJid() != null) {

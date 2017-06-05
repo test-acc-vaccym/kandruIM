@@ -215,14 +215,12 @@ public class PresenceParser extends AbstractParser implements
 
 			final Element idle = packet.findChild("idle", Namespace.IDLE);
 			if (idle != null) {
+				contact.flagInactive();
+				final String since = idle.getAttribute("since");
 				try {
-					final String since = idle.getAttribute("since");
 					contact.setLastseen(AbstractParser.parseTimestamp(since));
-					contact.flagInactive();
 				} catch (NullPointerException | ParseException e) {
-					if (contact.setLastseen(AbstractParser.parseTimestamp(packet))) {
-						contact.flagActive();
-					}
+					contact.setLastseen(System.currentTimeMillis());
 				}
 			} else {
 				if (contact.setLastseen(AbstractParser.parseTimestamp(packet))) {
@@ -240,7 +238,7 @@ public class PresenceParser extends AbstractParser implements
 			boolean online = sizeBefore < contact.getPresences().size();
 			mXmppConnectionService.onContactStatusChanged.onContactStatusChanged(contact, online);
 		} else if (type.equals("unavailable")) {
-			if (contact.setLastseen(AbstractParser.parseTimestamp(packet,0L,true))) {
+			if (contact.setLastseen(AbstractParser.parseTimestamp(packet))) {
 				contact.flagInactive();
 			}
 			if (from.isBareJid()) {

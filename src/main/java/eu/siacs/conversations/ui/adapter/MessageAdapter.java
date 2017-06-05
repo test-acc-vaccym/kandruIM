@@ -22,24 +22,19 @@ import android.text.style.StyleSpan;
 import android.text.util.Linkify;
 import android.util.DisplayMetrics;
 import android.view.ActionMode;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
@@ -71,8 +66,6 @@ import eu.siacs.conversations.utils.GeoHelper;
 import eu.siacs.conversations.utils.Patterns;
 import eu.siacs.conversations.utils.UIHelper;
 import eu.siacs.conversations.xmpp.mam.MamReference;
-import pl.droidsonroids.gif.GifDrawable;
-import pl.droidsonroids.gif.GifImageView;
 
 public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextView.CopyHandler {
 
@@ -301,7 +294,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.VISIBLE);
 		viewHolder.messageBody.setText(text);
 		viewHolder.messageBody.setTextColor(getMessageTextColor(darkBackground, false));
@@ -313,7 +306,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.VISIBLE);
 		viewHolder.messageBody.setText(getContext().getString(
 				R.string.decryption_failed));
@@ -326,7 +319,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.VISIBLE);
 		viewHolder.messageBody.setIncludeFontPadding(false);
 		Spannable span = new SpannableString(body);
@@ -408,7 +401,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.VISIBLE);
 		viewHolder.messageBody.setIncludeFontPadding(true);
 		if (message.getBody() != null) {
@@ -493,7 +486,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 
 	private void displayDownloadableMessage(ViewHolder viewHolder,
 			final Message message, String text) {
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.GONE);
 		viewHolder.download_button.setVisibility(View.VISIBLE);
 		viewHolder.download_button.setText(text);
@@ -507,7 +500,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 	}
 
 	private void displayOpenableMessage(ViewHolder viewHolder,final Message message) {
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.GONE);
 		viewHolder.download_button.setVisibility(View.VISIBLE);
 		viewHolder.download_button.setText(activity.getString(R.string.open_x_file, UIHelper.getFileDescriptionString(activity, message)));
@@ -521,7 +514,7 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 	}
 
 	private void displayLocationMessage(ViewHolder viewHolder, final Message message) {
-		viewHolder.image_holder.setVisibility(View.GONE);
+		viewHolder.image.setVisibility(View.GONE);
 		viewHolder.messageBody.setVisibility(View.GONE);
 		viewHolder.download_button.setVisibility(View.VISIBLE);
 		viewHolder.download_button.setText(R.string.show_location);
@@ -534,13 +527,13 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 		});
 	}
 
-	private void displayImageMessage(final ViewHolder viewHolder, final Message message) {
+	private void displayImageMessage(ViewHolder viewHolder,
+			final Message message) {
 		if (viewHolder.download_button != null) {
 			viewHolder.download_button.setVisibility(View.GONE);
 		}
 		viewHolder.messageBody.setVisibility(View.GONE);
 		viewHolder.image.setVisibility(View.VISIBLE);
-		viewHolder.image_holder.setVisibility(View.VISIBLE);
 		FileParams params = message.getFileParams();
 		double target = metrics.density * 288;
 		int scaledW;
@@ -558,76 +551,17 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 			scaledW = (int) target;
 			scaledH = (int) (params.height / ((double) params.width / target));
 		}
-		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(scaledW, scaledH);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(scaledW, scaledH);
 		layoutParams.setMargins(0, (int) (metrics.density * 4), 0, (int) (metrics.density * 4));
 		viewHolder.image.setLayoutParams(layoutParams);
+		activity.loadBitmap(message, viewHolder.image);
+		viewHolder.image.setOnClickListener(new OnClickListener() {
 
-		// if its a GIF
-		if (message.getMimeType() != null && message.getMimeType().endsWith("/gif")) {
-			GifDrawable drawable;
-			try {
-				File gif = activity.xmppConnectionService.getFileBackend().getFile(message);
-				drawable = new GifDrawable(gif);
+			@Override
+			public void onClick(View v) {
+				openDownloadable(message);
 			}
-			catch (IOException error) {
-				// TODO: something better?
-				error.printStackTrace();
-				return;
-			}
-
-			// start the gif in non-animated mode
-			drawable.stop();
-			viewHolder.play_btn.setVisibility(View.VISIBLE);
-			// load the gif into the view
-			viewHolder.image.setImageDrawable(drawable);
-			// set on tap / double tap listeners
-			viewHolder.image.setOnTouchListener(new View.OnTouchListener() {
-				private GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-					@Override
-					public boolean onDoubleTap(MotionEvent e) {
-						// open the gif
-						openDownloadable(message);
-						return true;
-					}
-
-					@Override
-					public boolean onSingleTapUp(MotionEvent e) {
-						GifDrawable gif = ((GifDrawable) viewHolder.image.getDrawable());
-
-						// on click toggle play / pause
-						if (gif.isRunning()) {
-							gif.stop();
-							viewHolder.play_btn.setVisibility(View.VISIBLE);
-						}
-						else {
-							gif.start();
-							viewHolder.play_btn.setVisibility(View.INVISIBLE);
-						}
-						return true;
-					}
-				});
-
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					gestureDetector.onTouchEvent(event);
-					return true;
-				}
-			});
-		}
-		// if its just a bitmap
-		else {
-			// hide the play button
-			viewHolder.play_btn.setVisibility(View.GONE);
-			// open the image if you click on it
-			viewHolder.image.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					openDownloadable(message);
-				}
-			});
-			// load the image into it
-			activity.loadBitmap(message, viewHolder.image);
-		}
+		});
 	}
 
 	private void loadMoreMessages(Conversation conversation) {
@@ -676,12 +610,8 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 					viewHolder.indicator = (ImageView) view
 						.findViewById(R.id.security_indicator);
 					viewHolder.edit_indicator = (ImageView) view.findViewById(R.id.edit_indicator);
-					viewHolder.image = (GifImageView) view
+					viewHolder.image = (ImageView) view
 						.findViewById(R.id.message_image);
-					viewHolder.play_btn = (ImageView) view
-						.findViewById(R.id.message_image_play);
-					viewHolder.image_holder = (FrameLayout) view
-						.findViewById(R.id.message_image_holder);
 					viewHolder.messageBody = (CopyTextView) view
 						.findViewById(R.id.message_body);
 					viewHolder.time = (TextView) view
@@ -701,12 +631,8 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 					viewHolder.indicator = (ImageView) view
 						.findViewById(R.id.security_indicator);
 					viewHolder.edit_indicator = (ImageView) view.findViewById(R.id.edit_indicator);
-					viewHolder.image = (GifImageView) view
+					viewHolder.image = (ImageView) view
 						.findViewById(R.id.message_image);
-					viewHolder.play_btn = (ImageView) view
-							.findViewById(R.id.message_image_play);
-					viewHolder.image_holder = (FrameLayout) view
-							.findViewById(R.id.message_image_holder);
 					viewHolder.messageBody = (CopyTextView) view
 						.findViewById(R.id.message_body);
 					viewHolder.time = (TextView) view
@@ -1048,11 +974,10 @@ public class MessageAdapter extends ArrayAdapter<Message> implements CopyTextVie
 	}
 
 	private static class ViewHolder {
+
 		protected LinearLayout message_box;
 		protected Button download_button;
-		protected GifImageView image;
-		protected ImageView play_btn;
-		protected FrameLayout image_holder;
+		protected ImageView image;
 		protected ImageView indicator;
 		protected ImageView indicatorReceived;
 		protected TextView time;

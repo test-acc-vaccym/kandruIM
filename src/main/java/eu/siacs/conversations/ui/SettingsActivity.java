@@ -46,7 +46,6 @@ public class SettingsActivity extends XmppActivity implements
 	public static final String BLIND_TRUST_BEFORE_VERIFICATION = "btbv";
 	public static final String AUTOMATIC_MESSAGE_DELETION = "automatic_message_deletion";
 	public static final String BROADCAST_LAST_ACTIVITY = "last_activity";
-	public static final String REAL_TIME_TEXT = "rtt";
 
 	public static final int REQUEST_WRITE_LOGS = 0xbf8701;
 	private SettingsFragment mSettingsFragment;
@@ -336,8 +335,7 @@ public class SettingsActivity extends XmppActivity implements
 				"allow_message_correction",
 				TREAT_VIBRATE_AS_SILENT,
 				MANUALLY_CHANGE_PRESENCE,
-				BROADCAST_LAST_ACTIVITY,
-				REAL_TIME_TEXT);
+				BROADCAST_LAST_ACTIVITY);
 		if (name.equals("resource")) {
 			String resource = preferences.getString("resource", "mobile")
 					.toLowerCase(Locale.US);
@@ -355,6 +353,10 @@ public class SettingsActivity extends XmppActivity implements
 				}
 			}
 		} else if (name.equals(KEEP_FOREGROUND_SERVICE)) {
+			boolean foreground_service = preferences.getBoolean(KEEP_FOREGROUND_SERVICE,false);
+			if (!foreground_service) {
+				xmppConnectionService.clearStartTimeCounter();
+			}
 			xmppConnectionService.toggleForegroundService();
 		} else if (resendPresence.contains(name)) {
 			if (xmppConnectionServiceBound) {

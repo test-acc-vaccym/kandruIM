@@ -2,7 +2,6 @@ package eu.siacs.conversations.parser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
 import java.util.Locale;
 
 import eu.siacs.conversations.entities.Account;
@@ -13,7 +12,6 @@ import eu.siacs.conversations.services.XmppConnectionService;
 import eu.siacs.conversations.xml.Element;
 import eu.siacs.conversations.xmpp.jid.InvalidJidException;
 import eu.siacs.conversations.xmpp.jid.Jid;
-import eu.siacs.conversations.xmpp.stanzas.AbstractStanza;
 
 public abstract class AbstractParser {
 
@@ -24,40 +22,18 @@ public abstract class AbstractParser {
 	}
 
 	public static Long parseTimestamp(Element element, Long d) {
-		return parseTimestamp(element,d,false);
-	}
-
-	public static Long parseTimestamp(Element element, Long d, boolean ignoreCsiAndSm) {
-		long min = Long.MAX_VALUE;
-		boolean returnDefault = true;
-		final Jid to;
-		if (ignoreCsiAndSm && element instanceof AbstractStanza) {
-			to = ((AbstractStanza) element).getTo();
-		} else {
-			to = null;
-		}
-		for(Element child : element.getChildren()) {
-			if ("delay".equals(child.getName()) && "urn:xmpp:delay".equals(child.getNamespace())) {
-				final Jid f = to == null ? null : child.getAttributeAsJid("from");
-				if (f != null && (to.toBareJid().equals(f) || to.getDomainpart().equals(f.toString()))) {
-					continue;
-				}
-				final String stamp = child.getAttribute("stamp");
-				if (stamp != null) {
-					try {
-						min = Math.min(min,AbstractParser.parseTimestamp(stamp));
-						returnDefault = false;
-					} catch (ParseException e) {
-						//ignore
-					}
+		Element delay = element.findChild("delay","urn:xmpp:delay");
+		if (delay != null) {
+			String stamp = delay.getAttribute("stamp");
+			if (stamp != null) {
+				try {
+					return AbstractParser.parseTimestamp(delay.getAttribute("stamp"));
+				} catch (ParseException e) {
+					return d;
 				}
 			}
 		}
-		if (returnDefault) {
-			return d;
-		} else {
-			return min;
-		}
+		return d;
 	}
 
 	public static long parseTimestamp(Element element) {

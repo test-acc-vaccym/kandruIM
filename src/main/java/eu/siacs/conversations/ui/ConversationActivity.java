@@ -1550,9 +1550,7 @@ public class ConversationActivity extends XmppActivity
 					}
 				});
 			}
-			AlertDialog dialog = builder.create();
-			dialog.setCanceledOnTouchOutside(false);
-			dialog.show();
+			builder.create().show();
 		}
 	}
 

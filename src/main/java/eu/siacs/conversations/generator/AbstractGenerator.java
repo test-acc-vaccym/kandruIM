@@ -124,9 +124,6 @@ public abstract class AbstractGenerator {
 		if (mXmppConnectionService.broadcastLastActivity()) {
 			features.add(Namespace.IDLE);
 		}
-		if (mXmppConnectionService.useRealTimeText()) {
-			features.add(Namespace.RTT);
-		}
 		Collections.sort(features);
 		return features;
 	}
