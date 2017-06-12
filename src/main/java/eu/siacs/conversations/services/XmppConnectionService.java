@@ -3619,12 +3619,8 @@ public class XmppConnectionService extends Service {
 	public List<Contact> findContacts(Jid jid) {
 		ArrayList<Contact> contacts = new ArrayList<>();
 		for (Account account : getAccounts()) {
-<<<<<<< HEAD
-			if (!account.isOptionSet(Account.OPTION_DISABLED)) {
-=======
 			if ((!account.isOptionSet(Account.OPTION_DISABLED) || accountJid != null)
 					&& (accountJid == null || accountJid.equals(account.getJid().toBareJid().toString()))) {
->>>>>>> dev
 				Contact contact = account.getRoster().getContactFromRoster(jid);
 				if (contact != null) {
 					contacts.add(contact);
