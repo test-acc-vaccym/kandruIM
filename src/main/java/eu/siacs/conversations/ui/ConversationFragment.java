@@ -170,7 +170,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 									final int pxOffset = (v == null) ? 0 : v.getTop();
 									ConversationFragment.this.conversation.populateWithMessages(ConversationFragment.this.messageList);
 									try {
-										updateDateTag();
 										updateStatusMessages();
 									} catch (IllegalStateException e) {
 										Log.d(Config.LOGTAG,"caught illegal state exception while updating status messages");
@@ -1114,7 +1113,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			if (this.conversation != null) {
 				conversation.populateWithMessages(ConversationFragment.this.messageList);
 				updateSnackBar(conversation);
-				updateDateTag();
 				updateStatusMessages();
 				this.messageListAdapter.notifyDataSetChanged();
 				updateChatMsgHint();
