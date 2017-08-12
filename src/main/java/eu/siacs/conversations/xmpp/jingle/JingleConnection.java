@@ -459,11 +459,8 @@ public class JingleConnection implements Transferable {
 					}
 				}
 				this.mFileOutputStream = AbstractConnectionManager.createOutputStream(this.file,message.getEncryption() == Message.ENCRYPTION_AXOLOTL);
-				if (message.getEncryption() == Message.ENCRYPTION_OTR && Config.REPORT_WRONG_FILESIZE_IN_OTR_JINGLE) {
-					this.file.setExpectedSize((size / 16 + 1) * 16);
-				} else {
-					this.file.setExpectedSize(size);
-				}
+				this.file.setExpectedSize(size);
+				message.resetFileParams();
 				Log.d(Config.LOGTAG, "receiving file: expecting size of " + this.file.getExpectedSize());
 			} else {
 				this.sendCancel();
@@ -508,6 +505,7 @@ public class JingleConnection implements Transferable {
 				cancel();
 				return;
 			}
+			message.resetFileParams();
 			this.mFileInputStream = pair.first;
 			content.setTransportId(this.transportId);
 			content.socks5transport().setChildren(getCandidatesAsElements());
