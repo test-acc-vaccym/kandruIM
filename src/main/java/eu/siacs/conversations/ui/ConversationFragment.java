@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -156,14 +157,16 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 								@Override
 								public void run() {
 									final int oldPosition = messagesView.getFirstVisiblePosition();
-									final Message message;
-									if (oldPosition < messageList.size()) {
-										message = messageList.get(oldPosition);
-									}  else {
-										message = null;
+									Message message = null;
+									int childPos;
+									for(childPos = 0; childPos + oldPosition < messageList.size(); ++childPos) {
+										message =  messageList.get(oldPosition + childPos);
+										if (message.getType() != Message.TYPE_STATUS) {
+											break;
+										}
 									}
-									String uuid = message != null ? message.getUuid() : null;
-									View v = messagesView.getChildAt(0);
+									final String uuid = message != null ? message.getUuid() : null;
+									View v = messagesView.getChildAt(childPos);
 									final int pxOffset = (v == null) ? 0 : v.getTop();
 									ConversationFragment.this.conversation.populateWithMessages(ConversationFragment.this.messageList);
 									try {
@@ -360,6 +363,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 							}
 							updateChatMsgHint();
 							updateSendButton();
+							updateEditablity();
 						}
 						break;
 					default:
@@ -620,7 +624,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			MenuItem cancelTransmission = menu.findItem(R.id.cancel_transmission);
 			MenuItem deleteFile = menu.findItem(R.id.delete_file);
 			MenuItem showErrorMessage = menu.findItem(R.id.show_error_message);
-			if (!treatAsFile && !GeoHelper.isGeoUri(m.getBody()) && !m.treatAsDownloadable()) {
+			if (!treatAsFile && !m.isGeoUri() && !m.treatAsDownloadable()) {
 				selectText.setVisible(ListSelectionManager.isSupported());
 			}
 			if (m.getEncryption() == Message.ENCRYPTION_DECRYPTION_FAILED) {
@@ -638,7 +642,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				sendAgain.setVisible(true);
 			}
 			if (m.hasFileOnRemoteHost()
-					|| GeoHelper.isGeoUri(m.getBody())
+					|| m.isGeoUri()
 					|| m.treatAsDownloadable()
 					|| (t != null && t instanceof HttpDownloadConnection)) {
 				copyUrl.setVisible(true);
@@ -715,7 +719,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	private void shareWith(Message message) {
 		Intent shareIntent = new Intent();
 		shareIntent.setAction(Intent.ACTION_SEND);
-		if (GeoHelper.isGeoUri(message.getBody())) {
+		if (message.isGeoUri()) {
 			shareIntent.putExtra(Intent.EXTRA_TEXT, message.getBody());
 			shareIntent.setType("text/plain");
 		} else if (!message.isFileOrImage()) {
@@ -787,7 +791,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	private void copyUrl(Message message) {
 		final String url;
 		final int resId;
-		if (GeoHelper.isGeoUri(message.getBody())) {
+		if (message.isGeoUri()) {
 			resId = R.string.location;
 			url = message.getBody();
 		} else if (message.hasFileOnRemoteHost()) {
@@ -831,6 +835,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		this.conversation.setNextCounterpart(counterpart);
 		updateChatMsgHint();
 		updateSendButton();
+		updateEditablity();
 	}
 
 	private void correctMessage(Message message) {
@@ -910,9 +915,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		}
 
 		this.conversation = conversation;
-		boolean canWrite = this.conversation.getMode() == Conversation.MODE_SINGLE || this.conversation.getMucOptions().participating();
-		this.mEditMessage.setEnabled(canWrite);
-		this.mSendButton.setEnabled(canWrite);
 		this.mEditMessage.setKeyboardListener(null);
 		this.mEditMessage.setText("");
 		this.mEditMessage.append(this.conversation.getNextMessage());
@@ -1119,7 +1121,8 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				if (!activity.isConversationsOverviewVisable() || !activity.isConversationsOverviewHideable()) {
 					activity.sendReadMarkerIfNecessary(conversation);
 				}
-				this.updateSendButton();
+				updateSendButton();
+				updateEditablity();
 			}
 		}
 	}
@@ -1249,6 +1252,14 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		return activity.getThemeResource(R.attr.ic_send_text_offline, R.drawable.ic_send_text_offline);
 	}
 
+	private void updateEditablity() {
+		boolean canWrite = this.conversation.getMode() == Conversation.MODE_SINGLE || this.conversation.getMucOptions().participating() || this.conversation.getNextCounterpart() != null;
+		this.mEditMessage.setFocusable(canWrite);
+		this.mEditMessage.setFocusableInTouchMode(canWrite);
+		this.mSendButton.setEnabled(canWrite);
+		this.mEditMessage.setCursorVisible(canWrite);
+	}
+
 	public void updateSendButton() {
 		final Conversation c = this.conversation;
 		final SendButtonAction action;
@@ -1269,7 +1280,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				if (conference && c.getNextCounterpart() != null) {
 					action = SendButtonAction.CANCEL;
 				} else {
-					String setting = activity.getPreferences().getString("quick_action", "recent");
+					String setting = activity.getPreferences().getString("quick_action", activity.getResources().getString(R.string.quick_action));
 					if (!setting.equals("none") && UIHelper.receivedLocationQuestion(conversation.getLatestMessage())) {
 						setting = "location";
 					} else if (setting.equals("recent")) {
@@ -1315,25 +1326,20 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		this.mSendButton.setImageResource(getSendButtonImageResource(action, status));
 	}
 
-	protected void updateDateTag(){
-		String currentDate=null;
-		//FIXME enable to change pattern in settings
-		String pattern = "dd.MM.yyyy";
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-		for(int i = 0; i < this.messageList.size(); i++){
-			Date date=new Date(this.messageList.get(i).getTimeSent());
-			String formatDate = simpleDateFormat.format(date);
-			if(currentDate == null||!currentDate.equals(formatDate)){
-				currentDate = formatDate;
-				Message message = new Message(this.conversation,currentDate,Message.ENCRYPTION_NONE);
-				message.setTime(this.messageList.get(i).getTimeSent());
-				message.setType(Message.TYPE_DATETAG);
-				this.messageList.add(i,message);
+	protected void updateDateSeparators() {
+		synchronized (this.messageList) {
+			for(int i = 0; i < this.messageList.size(); ++i) {
+				final Message current = this.messageList.get(i);
+				if (i == 0 || !UIHelper.sameDay(this.messageList.get(i-1).getTimeSent(),current.getTimeSent())) {
+					this.messageList.add(i,Message.createDateSeparator(current));
+					i++;
+				}
 			}
 		}
 	}
 
 	protected void updateStatusMessages() {
+		updateDateSeparators();
 		synchronized (this.messageList) {
 			if (showLoadMoreMessages(conversation)) {
 				this.messageList.add(0, Message.createLoadMoreMessage(conversation));
@@ -1674,6 +1680,11 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			} else if (requestCode == ConversationActivity.REQUEST_TRUST_KEYS_MENU) {
 				int choice = data.getIntExtra("choice", ConversationActivity.ATTACHMENT_CHOICE_INVALID);
 				activity.selectPresenceToAttachFile(choice, conversation.getNextEncryption());
+			}
+		} else if (resultCode == Activity.RESULT_CANCELED) {
+			if (requestCode == ConversationActivity.REQUEST_DECRYPT_PGP) {
+				// discard the message to prevent decryption being blocked
+				conversation.getAccount().getPgpDecryptionService().giveUpCurrentDecryption();
 			}
 		}
 	}

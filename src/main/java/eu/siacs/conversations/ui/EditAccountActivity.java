@@ -16,6 +16,7 @@ import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -843,7 +844,8 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 			} else {
 				this.mAccountJid.getEditableText().append(this.mAccount.getJid().toBareJid().toString());
 			}
-			this.mPassword.setText(this.mAccount.getPassword());
+			this.mPassword.getEditableText().clear();
+			this.mPassword.getEditableText().append(this.mAccount.getPassword());
 			this.mHostname.setText("");
 			this.mHostname.getEditableText().append(this.mAccount.getHostname());
 			this.mPort.setText("");
@@ -851,6 +853,11 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 			this.mNamePort.setVisibility(mShowOptions ? View.VISIBLE : View.GONE);
 
 		}
+
+		final boolean editable = !mAccount.isOptionSet(Account.OPTION_LOGGED_IN_SUCCESSFULLY);
+		this.mAccountJid.setEnabled(editable);
+		this.mAccountJid.setFocusable(editable);
+		this.mAccountJid.setFocusableInTouchMode(editable);
 
 		if (!mInitMode) {
 			this.mAvatar.setVisibility(View.VISIBLE);
@@ -905,7 +912,7 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 			} else {
 				this.mServerInfoSm.setText(R.string.server_info_unavailable);
 			}
-			if (features.pep()) {
+			if (features.pep() && features.pepPublishOptions()) {
 				AxolotlService axolotlService = this.mAccount.getAxolotlService();
 				if (axolotlService != null && axolotlService.isPepBroken()) {
 					this.mServerInfoPep.setText(R.string.server_info_broken);
@@ -1153,6 +1160,7 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 				final View view = getLayoutInflater().inflate(R.layout.captcha, null);
 				final ImageView imageView = (ImageView) view.findViewById(R.id.captcha);
 				final EditText input = (EditText) view.findViewById(R.id.input);
+				input.setInputType(InputType.TYPE_CLASS_NUMBER);
 				imageView.setImageBitmap(captcha);
 
 				builder.setTitle(getString(R.string.captcha_required));
@@ -1193,6 +1201,7 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 				});
 				mCaptchaDialog = builder.create();
 				mCaptchaDialog.show();
+				input.requestFocus();
 			}
 		});
 	}

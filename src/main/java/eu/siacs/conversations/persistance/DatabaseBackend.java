@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Pair;
 
 import org.json.JSONObject;
 import org.whispersystems.libsignal.SignalProtocolAddress;
@@ -50,6 +49,7 @@ import eu.siacs.conversations.entities.PresenceTemplate;
 import eu.siacs.conversations.entities.Roster;
 import eu.siacs.conversations.entities.ServiceDiscoveryResult;
 import eu.siacs.conversations.services.ShortcutService;
+import eu.siacs.conversations.utils.CryptoHelper;
 import eu.siacs.conversations.utils.MimeUtils;
 import eu.siacs.conversations.xmpp.jid.InvalidJidException;
 import eu.siacs.conversations.xmpp.jid.Jid;
@@ -60,7 +60,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 	private static DatabaseBackend instance = null;
 
 	private static final String DATABASE_NAME = "history";
-	private static final int DATABASE_VERSION = 35;
+	private static final int DATABASE_VERSION = 36;
 
 	private static String CREATE_CONTATCS_STATEMENT = "create table "
 			+ Contact.TABLENAME + "(" + Contact.ACCOUNT + " TEXT, "
@@ -276,8 +276,6 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 			recreateAxolotlDb(db);
 			db.execSQL("ALTER TABLE " + Message.TABLENAME + " ADD COLUMN "
 					+ Message.FINGERPRINT + " TEXT");
-		} else if (oldVersion < 22 && newVersion >= 22) {
-			db.execSQL("ALTER TABLE " + SQLiteAxolotlStore.IDENTITIES_TABLENAME + " ADD COLUMN " + SQLiteAxolotlStore.CERTIFICATE);
 		}
 		if (oldVersion < 16 && newVersion >= 16) {
 			db.execSQL("ALTER TABLE " + Message.TABLENAME + " ADD COLUMN "
@@ -297,7 +295,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 		/* Any migrations that alter the Account table need to happen BEFORE this migration, as it
 		 * depends on account de-serialization.
 		 */
-		if (oldVersion < 17 && newVersion >= 17) {
+		if (oldVersion < 17 && newVersion >= 17 && newVersion < 31) {
 			List<Account> accounts = getAccounts(db);
 			for (Account account : accounts) {
 				String ownDeviceIdString = account.getKey(SQLiteAxolotlStore.JSONKEY_REGISTRATION_ID);
@@ -311,7 +309,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 				if (identityKeyPair != null) {
 					String[] selectionArgs = {
 							account.getUuid(),
-							identityKeyPair.getPublicKey().getFingerprint().replaceAll("\\s", "")
+							CryptoHelper.bytesToHex(identityKeyPair.getPublicKey().serialize())
 					};
 					ContentValues values = new ContentValues();
 					values.put(SQLiteAxolotlStore.TRUSTED, 2);
@@ -335,6 +333,10 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 				db.update(Account.TABLENAME, account.getContentValues(), Account.UUID
 						+ "=?", new String[]{account.getUuid()});
 			}
+		}
+
+		if (oldVersion >= 15 && oldVersion < 22 && newVersion >= 22) {
+			db.execSQL("ALTER TABLE " + SQLiteAxolotlStore.IDENTITIES_TABLENAME + " ADD COLUMN " + SQLiteAxolotlStore.CERTIFICATE);
 		}
 
 		if (oldVersion < 23 && newVersion >= 23) {
@@ -367,7 +369,7 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 		if (oldVersion < 30 && newVersion >= 30) {
 			db.execSQL(CREATE_START_TIMES_TABLE);
 		}
-		if (oldVersion < 31 && newVersion >= 31) {
+		if (oldVersion >= 15 && oldVersion < 31 && newVersion >= 31) {
 			db.execSQL("ALTER TABLE "+ SQLiteAxolotlStore.IDENTITIES_TABLENAME + " ADD COLUMN "+SQLiteAxolotlStore.TRUST + " TEXT");
 			db.execSQL("ALTER TABLE "+ SQLiteAxolotlStore.IDENTITIES_TABLENAME + " ADD COLUMN "+SQLiteAxolotlStore.ACTIVE + " NUMBER");
 			HashMap<Integer,ContentValues> migration = new HashMap<>();
@@ -387,13 +389,13 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 			}
 
 		}
-		if (oldVersion < 32 && newVersion >= 32) {
+		if (oldVersion >= 15 && oldVersion < 32 && newVersion >= 32) {
 			db.execSQL("ALTER TABLE "+ SQLiteAxolotlStore.IDENTITIES_TABLENAME + " ADD COLUMN "+SQLiteAxolotlStore.LAST_ACTIVATION + " NUMBER");
 			ContentValues defaults = new ContentValues();
 			defaults.put(SQLiteAxolotlStore.LAST_ACTIVATION,System.currentTimeMillis());
 			db.update(SQLiteAxolotlStore.IDENTITIES_TABLENAME,defaults,null,null);
 		}
-		if (oldVersion < 33 && newVersion >= 33) {
+		if (oldVersion >= 15 && oldVersion < 33 && newVersion >= 33) {
 			String whereClause = SQLiteAxolotlStore.OWN+"=1";
 			db.update(SQLiteAxolotlStore.IDENTITIES_TABLENAME,createFingerprintStatusContentValues(FingerprintStatus.Trust.VERIFIED,true),whereClause,null);
 		}
@@ -442,6 +444,15 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 		}
 		if (oldVersion < 35 && newVersion >= 35) {
 			db.execSQL(CREATE_MESSAGE_CONVERSATION_INDEX);
+		}
+		if (oldVersion < 36 && newVersion >= 36) {
+			List<Account> accounts = getAccounts(db);
+			for (Account account : accounts) {
+				account.setOption(Account.OPTION_REQUIRES_ACCESS_MODE_CHANGE,true);
+				account.setOption(Account.OPTION_LOGGED_IN_SUCCESSFULLY,false);
+				db.update(Account.TABLENAME, account.getContentValues(), Account.UUID
+						+ "=?", new String[]{account.getUuid()});
+			}
 		}
 	}
 
@@ -943,6 +954,23 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 		return devices;
 	}
 
+	public List<String> getKnownSignalAddresses(Account account) {
+		List<String> addresses = new ArrayList<>();
+		String[] colums = {"DISTINCT "+SQLiteAxolotlStore.NAME};
+		String[] selectionArgs = {account.getUuid()};
+		Cursor cursor = getReadableDatabase().query(SQLiteAxolotlStore.SESSION_TABLENAME,
+				colums,
+				SQLiteAxolotlStore.ACCOUNT + " = ?",
+				selectionArgs,
+				null,null,null
+				);
+		while (cursor.moveToNext()) {
+			addresses.add(cursor.getString(0));
+		}
+		cursor.close();
+		return addresses;
+	}
+
 	public boolean containsSession(Account account, SignalProtocolAddress contact) {
 		Cursor cursor = getCursorForSession(account, contact);
 		int count = cursor.getCount();
@@ -1353,15 +1381,15 @@ public class DatabaseBackend extends SQLiteOpenHelper {
 	}
 
 	public void storeIdentityKey(Account account, String name, IdentityKey identityKey, FingerprintStatus status) {
-		storeIdentityKey(account, name, false, identityKey.getFingerprint().replaceAll("\\s", ""), Base64.encodeToString(identityKey.serialize(), Base64.DEFAULT), status);
+		storeIdentityKey(account, name, false, CryptoHelper.bytesToHex(identityKey.getPublicKey().serialize()), Base64.encodeToString(identityKey.serialize(), Base64.DEFAULT), status);
 	}
 
 	public void storeOwnIdentityKeyPair(Account account, IdentityKeyPair identityKeyPair) {
-		storeIdentityKey(account, account.getJid().toBareJid().toPreppedString(), true, identityKeyPair.getPublicKey().getFingerprint().replaceAll("\\s", ""), Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT), FingerprintStatus.createActiveVerified(false));
+		storeIdentityKey(account, account.getJid().toBareJid().toPreppedString(), true, CryptoHelper.bytesToHex(identityKeyPair.getPublicKey().serialize()), Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT), FingerprintStatus.createActiveVerified(false));
 	}
 
 
-	public void recreateAxolotlDb(SQLiteDatabase db) {
+	private void recreateAxolotlDb(SQLiteDatabase db) {
 		Log.d(Config.LOGTAG, AxolotlService.LOGPREFIX + " : " + ">>> (RE)CREATING AXOLOTL DATABASE <<<");
 		db.execSQL("DROP TABLE IF EXISTS " + SQLiteAxolotlStore.SESSION_TABLENAME);
 		db.execSQL(CREATE_SESSIONS_STATEMENT);

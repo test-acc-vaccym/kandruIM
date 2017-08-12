@@ -464,27 +464,27 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	}
 
 	public Message getLatestMarkableMessage() {
-		for (int i = this.messages.size() - 1; i >= 0; --i) {
-			if (this.messages.get(i).getStatus() <= Message.STATUS_RECEIVED
-					&& this.messages.get(i).markable) {
-				if (this.messages.get(i).isRead()) {
-					return null;
-				} else {
-					return this.messages.get(i);
+		synchronized (this.messages) {
+			for (int i = this.messages.size() - 1; i >= 0; --i) {
+				final Message message = this.messages.get(i);
+				if (message.getStatus() <= Message.STATUS_RECEIVED && message.markable) {
+					return message.isRead() ? null : message;
 				}
-					}
+			}
 		}
 		return null;
 	}
 
 	public Message getLatestMessage() {
-		if (this.messages.size() == 0) {
-			Message message = new Message(this, "", Message.ENCRYPTION_NONE);
-			message.setType(Message.TYPE_STATUS);
-			message.setTime(Math.max(getCreated(),getLastClearHistory().getTimestamp()));
-			return message;
-		} else {
-			return this.messages.get(this.messages.size() - 1);
+		synchronized (this.messages) {
+			if (this.messages.size() == 0) {
+				Message message = new Message(this, "", Message.ENCRYPTION_NONE);
+				message.setType(Message.TYPE_STATUS);
+				message.setTime(Math.max(getCreated(), getLastClearHistory().getTimestamp()));
+				return message;
+			} else {
+				return this.messages.get(this.messages.size() - 1);
+			}
 		}
 	}
 

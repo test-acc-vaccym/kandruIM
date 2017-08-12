@@ -57,6 +57,8 @@ public class Account extends AbstractEntity {
 	public static final int OPTION_REGISTER = 2;
 	public static final int OPTION_USECOMPRESSION = 3;
 	public static final int OPTION_MAGIC_CREATE = 4;
+	public static final int OPTION_REQUIRES_ACCESS_MODE_CHANGE = 5;
+	public static final int OPTION_LOGGED_IN_SUCCESSFULLY = 6;
 	public final HashSet<Pair<String, String>> inProgressDiscoFetches = new HashSet<>();
 
 	public boolean httpUploadAvailable(long filesize) {
@@ -107,44 +109,55 @@ public class Account extends AbstractEntity {
 	}
 
 	public enum State {
-		DISABLED,
-		OFFLINE,
-		CONNECTING,
-		ONLINE,
-		NO_INTERNET,
-		UNAUTHORIZED(true),
-		SERVER_NOT_FOUND(true),
-		REGISTRATION_FAILED(true),
-		REGISTRATION_WEB(true),
-		REGISTRATION_CONFLICT(true),
-		REGISTRATION_SUCCESSFUL,
-		REGISTRATION_NOT_SUPPORTED(true),
-		TLS_ERROR(true),
-		INCOMPATIBLE_SERVER(true),
-		TOR_NOT_AVAILABLE(true),
-		DOWNGRADE_ATTACK(true),
-		SESSION_FAILURE(true),
-		BIND_FAILURE(true),
-		HOST_UNKNOWN(true),
-		REGISTRATION_PLEASE_WAIT(true),
-		STREAM_ERROR(true),
-		POLICY_VIOLATION(true),
-		REGISTRATION_PASSWORD_TOO_WEAK(true),
-		PAYMENT_REQUIRED(true),
-		MISSING_INTERNET_PERMISSION(true);
+		DISABLED(false,false),
+		OFFLINE(false),
+		CONNECTING(false),
+		ONLINE(false),
+		NO_INTERNET(false),
+		UNAUTHORIZED,
+		SERVER_NOT_FOUND,
+		REGISTRATION_SUCCESSFUL(false),
+		REGISTRATION_FAILED(true,false),
+		REGISTRATION_WEB(true,false),
+		REGISTRATION_CONFLICT(true,false),
+		REGISTRATION_NOT_SUPPORTED(true,false),
+		REGISTRATION_PLEASE_WAIT(true,false),
+		REGISTRATION_PASSWORD_TOO_WEAK(true,false),
+		TLS_ERROR,
+		INCOMPATIBLE_SERVER,
+		TOR_NOT_AVAILABLE,
+		DOWNGRADE_ATTACK,
+		SESSION_FAILURE,
+		BIND_FAILURE,
+		HOST_UNKNOWN,
+		STREAM_ERROR,
+		POLICY_VIOLATION,
+		PAYMENT_REQUIRED,
+		MISSING_INTERNET_PERMISSION(false),
+		NETWORK_IS_UNREACHABLE(false);
 
 		private final boolean isError;
+		private final boolean attemptReconnect;
 
 		public boolean isError() {
 			return this.isError;
 		}
 
+		public boolean isAttemptReconnect() {
+			return this.attemptReconnect;
+		}
+
 		State(final boolean isError) {
+			this(isError,true);
+		}
+
+		State(final boolean isError, final boolean reconnect) {
 			this.isError = isError;
+			this.attemptReconnect = reconnect;
 		}
 
 		State() {
-			this(false);
+			this(true,true);
 		}
 
 		public int getReadableId() {
@@ -199,6 +212,8 @@ public class Account extends AbstractEntity {
 					return R.string.payment_required;
 				case MISSING_INTERNET_PERMISSION:
 					return R.string.missing_internet_permission;
+				case NETWORK_IS_UNREACHABLE:
+					return R.string.network_is_unreachable;
 				default:
 					return R.string.account_status_unknown;
 			}
@@ -291,12 +306,14 @@ public class Account extends AbstractEntity {
 		return ((options & (1 << option)) != 0);
 	}
 
-	public void setOption(final int option, final boolean value) {
+	public boolean setOption(final int option, final boolean value) {
+		final int before = this.options;
 		if (value) {
 			this.options |= 1 << option;
 		} else {
 			this.options &= ~(1 << option);
 		}
+		return before != this.options;
 	}
 
 	public String getUsername() {
@@ -305,8 +322,17 @@ public class Account extends AbstractEntity {
 
 	public boolean setJid(final Jid next) {
 		final Jid prev = this.jid != null ? this.jid.toBareJid() : null;
+		final boolean changed = prev == null || (next != null && !prev.equals(next.toBareJid()));
+		if (changed) {
+			final AxolotlService oldAxolotlService = this.axolotlService;
+			if (oldAxolotlService != null) {
+				oldAxolotlService.destroy();
+				this.jid = next;
+				this.axolotlService = oldAxolotlService.makeNew();
+			}
+		}
 		this.jid = next;
-		return prev == null || (next != null && !prev.equals(next.toBareJid()));
+		return changed;
 	}
 
 	public Jid getServer() {

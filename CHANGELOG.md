@@ -1,5 +1,32 @@
 # Changelog
 
+### Version 1.20.0
+* presence subscription no longer required for OMEMO on compatible servers
+* display emoji-only messages slightly larger
+
+### Version 1.19.5
+* fixed connection loop on Android <4.4
+
+### Version 1.19.4
+* work around for OpensFire’s self signed certs
+* use VPN’s DNS servers first
+
+### Version 1.19.3
+* Do not create foreground service when all accounts are disabled
+* bug fixes
+
+### Version 1.19.2
+* bug fixes
+
+### Version 1.19.1
+* Made DNSSEC hostname validation opt-in
+
+### Version 1.19.0
+* Added 'App Shortcuts' to quickly access frequent contacts
+* Use DNSSEC to verify hostname instead of domain in certificate
+* Setting to enable Heads-up notifications
+* Added date separators in message view
+
 ### Version 1.18.5
 * colorize send button only after history is caught up
 * improved MAM catchup strategy
