@@ -912,12 +912,14 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 			} else {
 				this.mServerInfoSm.setText(R.string.server_info_unavailable);
 			}
-			if (features.pep() && features.pepPublishOptions()) {
+			if (features.pep()) {
 				AxolotlService axolotlService = this.mAccount.getAxolotlService();
 				if (axolotlService != null && axolotlService.isPepBroken()) {
 					this.mServerInfoPep.setText(R.string.server_info_broken);
-				} else {
+				} else if (features.pepPublishOptions()) {
 					this.mServerInfoPep.setText(R.string.server_info_available);
+				} else {
+					this.mServerInfoPep.setText(R.string.server_info_partial);
 				}
 			} else {
 				this.mServerInfoPep.setText(R.string.server_info_unavailable);
@@ -991,8 +993,10 @@ public class EditAccountActivity extends OmemoActivity implements OnAccountUpdat
 				this.mAxolotlFingerprintBox.setVisibility(View.VISIBLE);
 				if (ownAxolotlFingerprint.equals(messageFingerprint)) {
 					this.mOwnFingerprintDesc.setTextColor(ContextCompat.getColor(this, R.color.accent));
+					this.mOwnFingerprintDesc.setText(R.string.omemo_fingerprint_selected_message);
 				} else {
 					this.mOwnFingerprintDesc.setTextColor(getSecondaryTextColor());
+					this.mOwnFingerprintDesc.setText(R.string.omemo_fingerprint);
 				}
 				this.mAxolotlFingerprint.setText(CryptoHelper.prettifyFingerprint(ownAxolotlFingerprint.substring(2)));
 				this.mAxolotlFingerprintToClipboardButton

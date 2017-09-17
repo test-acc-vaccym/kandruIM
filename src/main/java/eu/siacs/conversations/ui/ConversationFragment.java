@@ -314,17 +314,11 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 					return false;
 				}
 			}
-
-			// send the image
-			activity.attachImageToConversation(inputContentInfo.getContentUri());
-
-			// TODO: revoke permissions?
-			// since uploading an image is async its tough to wire a callback to when
-			// the image has finished uploading.
-			// According to the docs: "calling IC#releasePermission() is just to be a
-			// good citizen. Even if we failed to call that method, the system would eventually revoke
-			// the permission sometime after inputContentInfo object gets garbage-collected."
-			// See: https://developer.android.com/samples/CommitContentSampleApp/src/com.example.android.commitcontent.app/MainActivity.html#l164
+			if (activity.hasStoragePermission(ConversationActivity.REQUEST_ADD_EDITOR_CONTENT)) {
+				activity.attachImageToConversation(inputContentInfo.getContentUri());
+			} else {
+				activity.mPendingEditorContent = inputContentInfo.getContentUri();
+			}
 			return true;
 		}
 	};
@@ -460,7 +454,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		final View view = inflater.inflate(R.layout.fragment_conversation, container, false);
 		view.setOnClickListener(null);
 
-		String[] allImagesMimeType = {"image/*"};
 		mEditMessage = (EditMessage) view.findViewById(R.id.textinput);
 		mEditMessage.setOnClickListener(new OnClickListener() {
 
@@ -471,8 +464,9 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				}
 			}
 		});
+
 		mEditMessage.setOnEditorActionListener(mEditorActionListener);
-		mEditMessage.setRichContentListener(allImagesMimeType, mEditorContentListener);
+		mEditMessage.setRichContentListener(new String[]{"image/*"}, mEditorContentListener);
 
 		mSendButton = (ImageButton) view.findViewById(R.id.textSendButton);
 		mSendButton.setOnClickListener(this.mSendButtonListener);
@@ -965,10 +959,8 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		}
 	};
 
-	private OnClickListener mBlockClickListener = new OnClickListener() {
-		@Override
-		public void onClick(final View view) {
-			final Jid jid = conversation.getJid();
+	private void showBlockSubmenu(View view) {
+		final Jid jid = conversation.getJid();
 			if (jid.isDomainJid()) {
 				BlockContactDialog.show(activity, conversation);
 			} else {
@@ -991,6 +983,12 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				});
 				popupMenu.show();
 			}
+	}
+
+	private OnClickListener mBlockClickListener = new OnClickListener() {
+		@Override
+		public void onClick(final View view) {
+			showBlockSubmenu(view);
 		}
 	};
 
@@ -1003,6 +1001,14 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				activity.xmppConnectionService.createContact(contact);
 				activity.switchToContactDetails(contact);
 			}
+		}
+	};
+
+	private View.OnLongClickListener mLongPressBlockListener = new View.OnLongClickListener() {
+		@Override
+		public boolean onLongClick(View v) {
+			showBlockSubmenu(v);
+			return true;
 		}
 	};
 
@@ -1041,9 +1047,9 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		} else if (conversation.isBlocked()) {
 			showSnackbar(R.string.contact_blocked, R.string.unblock, this.mUnblockClickListener);
 		} else if (contact != null && !contact.showInRoster() && contact.getOption(Contact.Options.PENDING_SUBSCRIPTION_REQUEST)) {
-			showSnackbar(R.string.contact_added_you, R.string.add_back, this.mAddBackClickListener);
+			showSnackbar(R.string.contact_added_you, R.string.add_back, this.mAddBackClickListener, this.mLongPressBlockListener);
 		} else if (contact != null && contact.getOption(Contact.Options.PENDING_SUBSCRIPTION_REQUEST)) {
-			showSnackbar(R.string.contact_asks_for_presence_subscription, R.string.allow, this.mAllowPresenceSubscription);
+			showSnackbar(R.string.contact_asks_for_presence_subscription, R.string.allow, this.mAllowPresenceSubscription, this.mLongPressBlockListener);
 		} else if (mode == Conversation.MODE_MULTI
 				&& !conversation.getMucOptions().online()
 				&& account.getStatus() == Account.State.ONLINE) {
@@ -1411,6 +1417,10 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	}
 
 	protected void showSnackbar(final int message, final int action, final OnClickListener clickListener) {
+		showSnackbar(message,action,clickListener,null);
+	}
+
+	protected void showSnackbar(final int message, final int action, final OnClickListener clickListener, final View.OnLongClickListener longClickListener) {
 		snackbar.setVisibility(View.VISIBLE);
 		snackbar.setOnClickListener(null);
 		snackbarMessage.setText(message);
@@ -1420,6 +1430,7 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			snackbarAction.setText(action);
 		}
 		snackbarAction.setOnClickListener(clickListener);
+		snackbarAction.setOnLongClickListener(longClickListener);
 	}
 
 	protected void hideSnackbar() {

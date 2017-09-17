@@ -155,7 +155,6 @@ public class XmppConnectionService extends Service {
 	public static final String ACTION_REPLY_TO_CONVERSATION = "reply_to_conversations";
 	public static final String ACTION_MARK_AS_READ = "mark_as_read";
 	public static final String ACTION_CLEAR_NOTIFICATION = "clear_notification";
-	public static final String ACTION_DISABLE_FOREGROUND = "disable_foreground";
 	public static final String ACTION_DISMISS_ERROR_NOTIFICATIONS = "dismiss_error";
 	public static final String ACTION_TRY_AGAIN = "try_again";
 	public static final String ACTION_IDLE_PING = "idle_ping";
@@ -644,7 +643,8 @@ public class XmppConnectionService extends Service {
 		String pushedAccountHash = null;
 		boolean interactive = false;
 		if (action != null) {
-			final Conversation c = findConversationByUuid(intent.getStringExtra("uuid"));
+			final String uuid = intent.getStringExtra("uuid");
+			final Conversation c = findConversationByUuid(uuid);
 			switch (action) {
 				case ConnectivityManager.CONNECTIVITY_ACTION:
 					if (hasInternetConnection() && Config.RESET_ATTEMPT_COUNT_ON_NETWORK_CHANGE) {
@@ -666,10 +666,6 @@ public class XmppConnectionService extends Service {
 						mNotificationService.clear();
 					}
 					break;
-				case ACTION_DISABLE_FOREGROUND:
-					getPreferences().edit().putBoolean(SettingsActivity.KEEP_FOREGROUND_SERVICE, false).commit();
-					toggleForegroundService();
-					break;
 				case ACTION_DISMISS_ERROR_NOTIFICATIONS:
 					dismissErrorNotifications();
 					break;
@@ -687,7 +683,11 @@ public class XmppConnectionService extends Service {
 					}
 					break;
 				case ACTION_MARK_AS_READ:
-					sendReadMarker(c);
+					if (c != null) {
+						sendReadMarker(c);
+					} else {
+						Log.d(Config.LOGTAG,"received mark read intent for unknown conversation ("+uuid+")");
+					}
 					break;
 				case AudioManager.RINGER_MODE_CHANGED_ACTION:
 					if (dndOnSilentMode()) {
