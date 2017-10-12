@@ -13,66 +13,70 @@
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:background="?attr/infocard_border"
-            android:padding="@dimen/infocard_padding">
+            android:padding="@dimen/infocard_padding" >
 
             <QuickContactBadge
                 android:id="@+id/details_contact_badge"
-                android:layout_width="256dp"
-                android:layout_height="256dp"
-                android:layout_below="@+id/details_contactjid"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="16dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_alignParentTop="true"
                 android:scaleType="centerCrop" />
 
             <LinearLayout
                 android:id="@+id/details_jidbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="35dp"
-                android:orientation="vertical"
-                android:layout_below="@+id/details_contact_badge"
-                android:layout_alignLeft="@+id/details_contact_badge"
-                android:layout_alignStart="@+id/details_contact_badge"
-                android:layout_alignRight="@+id/details_contact_badge"
-                android:layout_alignEnd="@+id/details_contact_badge">
+                android:layout_marginLeft="16dp"
+                android:layout_toRightOf="@+id/details_contact_badge"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/details_contactjid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/account_settings_example_jabber_id"
+                    android:textColor="?attr/color_text_primary"
+                    android:textSize="?attr/TextSizeHeadline"
+                    android:textStyle="bold" />
 
                 <com.wefika.flowlayout.FlowLayout
                     android:id="@+id/tags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:layout_marginLeft="-2dp"
                     android:layout_marginTop="4dp"
-                    android:orientation="horizontal"></com.wefika.flowlayout.FlowLayout>
+                    android:layout_marginLeft="-2dp"
+                    android:layout_marginBottom="4dp"
+                    android:orientation="horizontal">
+                </com.wefika.flowlayout.FlowLayout>
 
                 <TextView
                     android:id="@+id/details_lastseen"
+                    android:layout_marginTop="4dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
                     android:textColor="?attr/color_text_primary"
                     android:textSize="?attr/TextSizeBody" />
 
                 <TextView
+                    android:layout_marginTop="8dp"
                     android:id="@+id/status_message"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:textColor="?attr/color_text_secondary"
-                    android:textSize="?attr/TextSizeBody"
-                    android:textStyle="italic" />
+                    android:textStyle="italic"
+                    android:textSize="?attr/TextSizeBody" />
 
                 <Button
                     android:id="@+id/add_contact_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/add_contact" />
+                    android:text="@string/add_contact"/>
 
                 <CheckBox
                     android:id="@+id/details_send_presence"
@@ -102,17 +106,6 @@
                 android:text="@string/using_account"
                 android:textColor="?attr/color_text_secondary"
                 android:textSize="?attr/TextSizeInfo" />
-
-            <TextView
-                android:id="@+id/details_contactjid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:text="@string/account_settings_example_jabber_id"
-                android:textColor="?attr/color_text_primary"
-                android:textSize="?attr/TextSizeHeadline"
-                android:textStyle="bold" />
         </RelativeLayout>
 
         <LinearLayout

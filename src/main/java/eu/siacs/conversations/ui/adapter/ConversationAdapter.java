@@ -65,7 +65,6 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 		UnreadCountCustomView unreadCountCustomView = (UnreadCountCustomView) view.findViewById(R.id.unread_count);
 
 		Message message = conversation.getLatestMessage();
-		
 		int unreadCount = conversation.unreadCount();
 		if (unreadCount > 0) {
 			unreadCountCustomView.setVisibility(View.VISIBLE);
@@ -92,7 +91,6 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 			mLastMessage.setVisibility(View.VISIBLE);
 			imagePreview.setVisibility(View.GONE);
 			mLastMessage.setText(preview.first);
-
 			if (preview.second) {
 				if (conversation.isRead()) {
 					mLastMessage.setTypeface(null, Typeface.ITALIC);
@@ -145,28 +143,6 @@ public class ConversationAdapter extends ArrayAdapter<Conversation> {
 		mTimestamp.setText(UIHelper.readableTimeDifference(activity,conversation.getLatestMessage().getTimeSent()));
 		ImageView profilePicture = (ImageView) view.findViewById(R.id.conversation_image);
 		loadAvatar(conversation,profilePicture);
-
-		View contact_status = view.findViewById(R.id.contact_status);
-		if (conversation.getMode() == Conversation.MODE_SINGLE) {
-			contact_status.setVisibility(View.VISIBLE);
-			switch (conversation.getContact().getPresences().getShownStatus()) {
-				case AWAY:
-					contact_status.setBackgroundColor(0xffff9800);
-					break;
-				case XA:
-				case DND:
-					contact_status.setBackgroundColor(0xfff44336);
-					break;
-				case OFFLINE:
-					contact_status.setBackgroundColor(0xffc62828);
-					break;
-				default:
-					contact_status.setBackgroundColor(0xff259b24);
-					break;
-			}
-		} else {
-			contact_status.setVisibility(View.GONE);
-		}
 
 		return view;
 	}

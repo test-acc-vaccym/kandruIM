@@ -136,7 +136,6 @@
 	<string name="ask_for_presence_updates">Ask for presence updates</string>
 	<string name="attach_choose_picture">Choose picture</string>
 	<string name="attach_take_picture">Take picture</string>
-	<string name="attach_take_video">Take video</string>
 	<string name="preemptively_grant">Preemptively grant subscription request</string>
 	<string name="error_not_an_image_file">The file you selected is not an image</string>
 	<string name="error_compressing_image">Error while converting the image file</string>
@@ -401,7 +400,7 @@
 	<string name="regenerate_omemo_key">Regenerate OMEMO key</string>
 	<string name="clear_other_devices">Clear devices</string>
 	<string name="clear_other_devices_desc">Are you sure you want to clear all other devices from the OMEMO announcement? The next time your devices connect, they will reannounce themselves, but they might not receive messages sent in the meantime.</string>
-	<string name="error_no_keys_to_trust_server_error">There are no usable keys available for this contact.\nFetching new keys from the server has been unsuccessful. Maybe there is something wrong with your contacts server.</string>
+	<string name="error_no_keys_to_trust_server_error">There are no usable keys available for this contact.\nFetching new keys from the server has been unsuccessful. Maybe there is something wrong with your contact’s server.</string>
 	<string name="error_no_keys_to_trust_presence">There are no usable keys available for this contact.\nMake sure you have mutual presence subscription.</string>
 	<string name="error_no_keys_to_trust">There are no usable keys available for this contact. If you have purged any of their keys, they need to generate new ones.</string>
 	<string name="error_trustkeys_title">Error</string>
@@ -732,4 +731,5 @@
 	<string name="network_is_unreachable">Network is unreachable</string>
 	<string name="certificate_does_not_contain_jid">Certificate does not contain a Jabber ID</string>
 	<string name="server_info_partial">partial</string>
+    <string name="attach_record_video">Record video</string>
 </resources>

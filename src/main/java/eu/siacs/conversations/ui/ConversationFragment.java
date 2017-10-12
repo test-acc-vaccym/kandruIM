@@ -73,8 +73,8 @@ import eu.siacs.conversations.ui.XmppActivity.OnValueEdited;
 import eu.siacs.conversations.ui.adapter.MessageAdapter;
 import eu.siacs.conversations.ui.adapter.MessageAdapter.OnContactPictureClicked;
 import eu.siacs.conversations.ui.adapter.MessageAdapter.OnContactPictureLongClicked;
+import eu.siacs.conversations.ui.widget.EditMessage;
 import eu.siacs.conversations.ui.widget.ListSelectionManager;
-import eu.siacs.conversations.utils.GeoHelper;
 import eu.siacs.conversations.utils.NickValidityChecker;
 import eu.siacs.conversations.utils.UIHelper;
 import eu.siacs.conversations.xmpp.XmppConnection;
@@ -333,8 +333,8 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 					case TAKE_PHOTO:
 						activity.attachFile(ConversationActivity.ATTACHMENT_CHOICE_TAKE_PHOTO);
 						break;
-					case TAKE_VIDEO:
-						activity.attachFile(ConversationActivity.ATTACHMENT_CHOICE_TAKE_VIDEO);
+					case RECORD_VIDEO:
+						activity.attachFile(ConversationActivity.ATTACHMENT_CHOICE_RECORD_VIDEO);
 						break;
 					case SEND_LOCATION:
 						activity.attachFile(ConversationActivity.ATTACHMENT_CHOICE_LOCATION);
@@ -767,10 +767,25 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		}
 	}
 
-	private void resendMessage(Message message) {
-		if (message.getType() == Message.TYPE_FILE || message.getType() == Message.TYPE_IMAGE) {
+	private void resendMessage(final Message message) {
+		if (message.isFileOrImage()) {
 			DownloadableFile file = activity.xmppConnectionService.getFileBackend().getFile(message);
-			if (!file.exists()) {
+			if (file.exists()) {
+				final Conversation conversation = message.getConversation();
+				final XmppConnection xmppConnection = conversation.getAccount().getXmppConnection();
+				if (!message.hasFileOnRemoteHost()
+						&& xmppConnection != null
+						&& !xmppConnection.getFeatures().httpUpload(message.getFileParams().size)) {
+					activity.selectPresence(conversation, new OnPresenceSelected() {
+						@Override
+						public void onPresenceSelected() {
+							message.setCounterpart(conversation.getNextCounterpart());
+							activity.xmppConnectionService.resendFailedMessages(message);
+						}
+					});
+					return;
+				}
+			} else {
 				Toast.makeText(activity, R.string.file_deleted, Toast.LENGTH_SHORT).show();
 				message.setTransferable(new TransferablePlaceholder(Transferable.STATUS_DELETED));
 				activity.updateConversationList();
@@ -872,9 +887,14 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	@Override
 	public void onStop() {
 		super.onStop();
+		if (activity == null || !activity.isChangingConfigurations()) {
+			messageListAdapter.stopAudioPlayer();
+		}
 		if (this.conversation != null) {
 			final String msg = mEditMessage.getText().toString();
-			this.conversation.setNextMessage(msg);
+			if (this.conversation.setNextMessage(msg)) {
+				activity.xmppConnectionService.updateConversation(this.conversation);
+			}
 			updateChatState(this.conversation, msg);
 		}
 	}
@@ -895,9 +915,12 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 		setupIme();
 		if (this.conversation != null) {
 			final String msg = mEditMessage.getText().toString();
-			this.conversation.setNextMessage(msg);
+			if (this.conversation.setNextMessage(msg)) {
+				activity.xmppConnectionService.updateConversation(conversation);
+			}
 			if (this.conversation != conversation) {
 				updateChatState(this.conversation, msg);
+				messageListAdapter.stopAudioPlayer();
 			}
 			this.conversation.trim();
 
@@ -1138,7 +1161,9 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 			mEditMessage.append(conversation.getDraftMessage());
 			conversation.setDraftMessage(null);
 		}
-		conversation.setNextMessage(mEditMessage.getText().toString());
+		if (conversation.setNextMessage(mEditMessage.getText().toString())) {
+			activity.xmppConnectionService.updateConversation(conversation);
+		}
 		updateChatMsgHint();
 		new Handler().post(new Runnable() {
 			@Override
@@ -1152,12 +1177,21 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 	public void setFocusOnInputField() {
 		mEditMessage.requestFocus();
 	}
-	
+
 	public void doneSendingPgpMessage() {
 		mSendingPgpMessage.set(false);
 	}
 
-	enum SendButtonAction {TEXT, TAKE_PHOTO, TAKE_VIDEO, SEND_LOCATION, RECORD_VOICE, CANCEL, CHOOSE_PICTURE}
+	enum SendButtonAction {TEXT, TAKE_PHOTO, SEND_LOCATION, RECORD_VOICE, CANCEL, CHOOSE_PICTURE, RECORD_VIDEO;
+
+		public static SendButtonAction valueOfOrDefault(String setting, SendButtonAction text) {
+			try {
+				return valueOf(setting);
+			} catch (IllegalArgumentException e) {
+				return TEXT;
+			}
+		}
+	}
 
 	private int getSendButtonImageResource(SendButtonAction action, Presence.Status status) {
 		switch (action) {
@@ -1174,6 +1208,19 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 					default:
 						return activity.getThemeResource(R.attr.ic_send_text_offline, R.drawable.ic_send_text_offline);
 				}
+			case RECORD_VIDEO:
+				switch (status) {
+					case CHAT:
+					case ONLINE:
+						return R.drawable.ic_send_videocam_online;
+					case AWAY:
+						return R.drawable.ic_send_videocam_away;
+					case XA:
+					case DND:
+						return R.drawable.ic_send_videocam_dnd;
+					default:
+						return activity.getThemeResource(R.attr.ic_send_videocam_offline, R.drawable.ic_send_videocam_offline);
+				}
 			case TAKE_PHOTO:
 				switch (status) {
 					case CHAT:
@@ -1186,19 +1233,6 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 						return R.drawable.ic_send_photo_dnd;
 					default:
 						return activity.getThemeResource(R.attr.ic_send_photo_offline, R.drawable.ic_send_photo_offline);
-				}
-			case TAKE_VIDEO:
-				switch (status) {
-					case CHAT:
-					case ONLINE:
-						return R.drawable.ic_send_video_online;
-					case AWAY:
-						return R.drawable.ic_send_video_away;
-					case XA:
-					case DND:
-						return R.drawable.ic_send_video_dnd;
-					default:
-						return activity.getThemeResource(R.attr.ic_send_video_offline, R.drawable.ic_send_video_offline);
 				}
 			case RECORD_VOICE:
 				switch (status) {
@@ -1286,29 +1320,14 @@ public class ConversationFragment extends Fragment implements EditMessage.Keyboa
 				} else {
 					String setting = activity.getPreferences().getString("quick_action", activity.getResources().getString(R.string.quick_action));
 					if (!setting.equals("none") && UIHelper.receivedLocationQuestion(conversation.getLatestMessage())) {
-						setting = "location";
-					} else if (setting.equals("recent")) {
-						setting = activity.getPreferences().getString("recently_used_quick_action", "text");
-					}
-					switch (setting) {
-						case "photo":
-							action = SendButtonAction.TAKE_PHOTO;
-							break;
-						case "video":
-							action = SendButtonAction.TAKE_VIDEO;
-							break;
-						case "location":
-							action = SendButtonAction.SEND_LOCATION;
-							break;
-						case "voice":
-							action = SendButtonAction.RECORD_VOICE;
-							break;
-						case "picture":
-							action = SendButtonAction.CHOOSE_PICTURE;
-							break;
-						default:
-							action = SendButtonAction.TEXT;
-							break;
+						action = SendButtonAction.SEND_LOCATION;
+					} else {
+						if (setting.equals("recent")) {
+							setting = activity.getPreferences().getString(ConversationActivity.RECENTLY_USED_QUICK_ACTION, SendButtonAction.TEXT.toString());
+							action = SendButtonAction.valueOfOrDefault(setting,SendButtonAction.TEXT);
+						} else {
+							action = SendButtonAction.valueOfOrDefault(setting,SendButtonAction.TEXT);
+						}
 					}
 				}
 			} else {

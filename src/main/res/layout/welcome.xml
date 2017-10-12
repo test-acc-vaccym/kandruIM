@@ -62,15 +62,13 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true">
-
             <ImageView
-                android:layout_width="@android:dimen/thumbnail_width"
-                android:layout_height="@android:dimen/thumbnail_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
                 android:padding="8dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/main_logo" />
+                android:src="@drawable/main_logo"/>
         </RelativeLayout>
         <TextView
             android:paddingLeft="8dp"

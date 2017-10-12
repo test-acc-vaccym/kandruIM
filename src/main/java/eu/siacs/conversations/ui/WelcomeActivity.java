@@ -6,7 +6,6 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.net.Uri;
 
 import java.util.List;
 
@@ -50,6 +49,7 @@ public class WelcomeActivity extends XmppActivity {
 		createAccount.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				//KANDRUIM REGISTRATION
 				Intent browseIntent= new Intent(Intent.ACTION_VIEW, Uri.parse("https://account.kandru.de"));
 				startActivity(browseIntent);
 			}
