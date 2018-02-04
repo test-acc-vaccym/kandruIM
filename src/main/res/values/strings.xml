@@ -736,13 +736,10 @@
 	<string name="certificate_does_not_contain_jid">Certificate does not contain a Jabber ID</string>
 	<string name="server_info_partial">partial</string>
     <string name="attach_record_video">Record video</string>
-<<<<<<< HEAD
-=======
 	<string name="copy_to_clipboard">Copy to clipboard</string>
 	<string name="message_copied_to_clipboard">Message copied to clipboard</string>
 	<string name="message">Message</string>
 	<string name="private_messages_are_disabled">Private messages are disabled</string>
 	<string name="huawei_protected_apps">Protected Apps</string>
-	<string name="huawei_protected_apps_summary">To keep receiving notifications, even when the screen is turned off, you need to add Conversations to the list of protected apps.</string>
->>>>>>> siacs/master
+	<string name="huawei_protected_apps_summary">To keep receiving notifications, even when the screen is turned off, you need to add kandruIM to the list of protected apps.</string>
 </resources>
