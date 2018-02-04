@@ -1,8 +1,7 @@
 # KandruIM
 
-<<<<<<< HEAD
 a fork of Conversations with some extensions.
-=======
+<br>
 <p align="center">Conversations: the very last word in instant messaging</p>
 
 <p align="center">
