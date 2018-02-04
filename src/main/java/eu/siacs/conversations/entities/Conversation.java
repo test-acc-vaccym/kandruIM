@@ -202,15 +202,13 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	}
 
 	public boolean setOutgoingChatState(ChatState state) {
-		if (mode == MODE_MULTI && (getNextCounterpart() != null || !isPnNA())) {
-			return false;
+		if (mode == MODE_SINGLE && !getContact().isSelf() || (isPrivateAndNonAnonymous() && getNextCounterpart() == null)) {
+			if (this.mOutgoingChatState != state) {
+				this.mOutgoingChatState = state;
+				return true;
+			}
 		}
-		if (this.mOutgoingChatState != state) {
-			this.mOutgoingChatState = state;
-			return true;
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	public ChatState getOutgoingChatState() {
@@ -290,6 +288,18 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		synchronized (this.messages) {
 			for (Message message : this.messages) {
 				if (id.equals(message.getUuid())) {
+					return message;
+				}
+			}
+		}
+		return null;
+	}
+
+	public Message findMessageWithRemoteId(String id, Jid counterpart) {
+		synchronized (this.messages) {
+			for(Message message : this.messages) {
+				if (counterpart.equals(message.getCounterpart())
+						&& (id.equals(message.getRemoteMsgId()) || id.equals(message.getUuid()))) {
 					return message;
 				}
 			}
@@ -462,11 +472,13 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		return unread;
 	}
 
-	public Message getLatestMarkableMessage() {
+	public Message getLatestMarkableMessage(boolean isPrivateAndNonAnonymousMuc) {
 		synchronized (this.messages) {
 			for (int i = this.messages.size() - 1; i >= 0; --i) {
 				final Message message = this.messages.get(i);
-				if (message.getStatus() <= Message.STATUS_RECEIVED && message.markable) {
+				if (message.getStatus() <= Message.STATUS_RECEIVED
+						&& (message.markable || isPrivateAndNonAnonymousMuc)
+						&& message.getType() != Message.TYPE_PRIVATE) {
 					return message.isRead() ? null : message;
 				}
 			}
@@ -489,12 +501,12 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 
 	public String getName() {
 		if (getMode() == MODE_MULTI) {
-			if (getMucOptions().getSubject() != null) {
-				return getMucOptions().getSubject();
-			} else if (bookmark != null
-					&& bookmark.getBookmarkName() != null
-					&& !bookmark.getBookmarkName().trim().isEmpty()) {
-				return bookmark.getBookmarkName().trim();
+			final String subject = getMucOptions().getSubject();
+			final String bookmarkName = bookmark != null ? bookmark.getBookmarkName() : null;
+			if (subject != null && !subject.trim().isEmpty()) {
+				return subject;
+			} else if (bookmarkName != null && !bookmarkName.trim().isEmpty()) {
+				return bookmarkName;
 			} else {
 				String generatedName = getMucOptions().createNameFromParticipants();
 				if (generatedName != null) {
@@ -691,8 +703,12 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	/**
 	 * short for is Private and Non-anonymous
 	 */
-	private boolean isPnNA() {
-		return mode == MODE_SINGLE || (getMucOptions().membersOnly() && getMucOptions().nonanonymous());
+	public boolean isSingleOrPrivateAndNonAnonymous() {
+		return mode == MODE_SINGLE || isPrivateAndNonAnonymous();
+	}
+
+	public boolean isPrivateAndNonAnonymous() {
+		return getMucOptions().isPrivateAndNonAnonymous();
 	}
 
 	public synchronized MucOptions getMucOptions() {
@@ -770,7 +786,7 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 
 	public boolean setNextMessage(String message) {
 		boolean changed = !getNextMessage().equals(message);
-		this.setAttribute(ATTRIBUTE_NEXT_MESSAGE,message);
+		this.setAttribute(ATTRIBUTE_NEXT_MESSAGE, message);
 		return changed;
 	}
 
@@ -798,15 +814,19 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		return this.bookmark;
 	}
 
-	public boolean hasDuplicateMessage(Message message) {
+	public Message findDuplicateMessage(Message message) {
 		synchronized (this.messages) {
 			for (int i = this.messages.size() - 1; i >= 0; --i) {
 				if (this.messages.get(i).similar(message)) {
-					return true;
+					return this.messages.get(i);
 				}
 			}
 		}
-		return false;
+		return null;
+	}
+
+	public boolean hasDuplicateMessage(Message message) {
+		return findDuplicateMessage(message) != null;
 	}
 
 	public Message findSentMessageWithBody(String body) {
@@ -834,8 +854,11 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		MamReference lastReceived = new MamReference(0);
 		synchronized (this.messages) {
 			for(int i = this.messages.size() - 1; i >= 0; --i) {
-				Message message = this.messages.get(i);
-				if (message.getStatus() == Message.STATUS_RECEIVED || message.isCarbon()) {
+				final Message message = this.messages.get(i);
+				if (message.getType() == Message.TYPE_PRIVATE) {
+					continue; //it's unsafe to use private messages as anchor. They could be coming from user archive
+				}
+				if (message.getStatus() == Message.STATUS_RECEIVED || message.isCarbon() || message.getServerMsgId() != null) {
 					lastReceived = new MamReference(message.getTimeSent(),message.getServerMsgId());
 					break;
 				}
@@ -853,13 +876,13 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 	}
 
 	public boolean alwaysNotify() {
-		return mode == MODE_SINGLE || getBooleanAttribute(ATTRIBUTE_ALWAYS_NOTIFY, Config.ALWAYS_NOTIFY_BY_DEFAULT || isPnNA());
+		return mode == MODE_SINGLE || getBooleanAttribute(ATTRIBUTE_ALWAYS_NOTIFY, Config.ALWAYS_NOTIFY_BY_DEFAULT || isPrivateAndNonAnonymous());
 	}
 
 	public boolean setAttribute(String key, String value) {
 		synchronized (this.attributes) {
 			try {
-				this.attributes.put(key, value);
+				this.attributes.put(key, value == null ? "" : value);
 				return true;
 			} catch (JSONException e) {
 				return false;

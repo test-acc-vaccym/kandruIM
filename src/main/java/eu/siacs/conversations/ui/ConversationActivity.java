@@ -139,6 +139,9 @@ public class ConversationActivity extends XmppActivity
 	}
 
 	public void showConversationsOverview() {
+		if (mConversationFragment != null) {
+			mConversationFragment.stopScrolling();
+		}
 		if (mContentView instanceof SlidingPaneLayout) {
 			SlidingPaneLayout mSlidingPaneLayout = (SlidingPaneLayout) mContentView;
 			mShouldPanelBeOpen.set(true);
@@ -206,9 +209,10 @@ public class ConversationActivity extends XmppActivity
 		transaction.replace(R.id.selected_conversation, this.mConversationFragment, "conversation");
 		transaction.commit();
 
-		listView = (EnhancedListView) findViewById(R.id.list);
+		this.listView = findViewById(R.id.list);
 		this.listAdapter = new ConversationAdapter(this, conversationList);
-		listView.setAdapter(this.listAdapter);
+		this.listView.setAdapter(this.listAdapter);
+		this.listView.setSwipeDirection(EnhancedListView.SwipeDirection.END);
 
 		final ActionBar actionBar = getActionBar();
 		if (actionBar != null) {
@@ -221,6 +225,7 @@ public class ConversationActivity extends XmppActivity
 			public void onItemClick(AdapterView<?> arg0, View clickedView,
 									int position, long arg3) {
 				if (getSelectedConversation() != conversationList.get(position)) {
+					ConversationActivity.this.mConversationFragment.stopScrolling();
 					setSelectedConversation(conversationList.get(position));
 					ConversationActivity.this.mConversationFragment.reInit(getSelectedConversation());
 					conversationWasSelectedByKeyboard = false;
@@ -596,6 +601,12 @@ public class ConversationActivity extends XmppActivity
 			default:
 				action = null;
 				break;
+			default:
+				action = null;
+				break;
+		}
+		if (action != null) {
+			getPreferences().edit().putString(RECENTLY_USED_QUICK_ACTION,action.toString()).apply();
 		}
 		if (action != null) {
 			getPreferences().edit().putString(RECENTLY_USED_QUICK_ACTION,action.toString()).apply();
@@ -912,7 +923,7 @@ public class ConversationActivity extends XmppActivity
 									conversation.setNextEncryption(Message.ENCRYPTION_PGP);
 									item.setChecked(true);
 								} else {
-									announcePgp(conversation.getAccount(), conversation, onOpenPGPKeyPublished);
+									announcePgp(conversation.getAccount(), conversation,null, onOpenPGPKeyPublished);
 								}
 							} else {
 								showInstallPgpDialog();
@@ -1113,6 +1124,7 @@ public class ConversationActivity extends XmppActivity
 	private boolean openConversationByIndex(int index) {
 		try {
 			this.conversationWasSelectedByKeyboard = true;
+			this.mConversationFragment.stopScrolling();
 			setSelectedConversation(this.conversationList.get(index));
 			this.mConversationFragment.reInit(getSelectedConversation());
 			if (index > listView.getLastVisiblePosition() - 1 || index < listView.getFirstVisiblePosition() + 1) {
@@ -1331,6 +1343,7 @@ public class ConversationActivity extends XmppActivity
 		final String text = intent.getStringExtra(TEXT);
 		final String nick = intent.getStringExtra(NICK);
 		final boolean pm = intent.getBooleanExtra(PRIVATE_MESSAGE, false);
+		this.mConversationFragment.stopScrolling();
 		if (selectConversationByUuid(uuid)) {
 			this.mConversationFragment.reInit(getSelectedConversation());
 			if (nick != null) {
@@ -1417,7 +1430,7 @@ public class ConversationActivity extends XmppActivity
 						// associate selected PGP keyId with the account
 						mSelectedConversation.getAccount().setPgpSignId(data.getExtras().getLong(OpenPgpApi.EXTRA_SIGN_KEY_ID));
 						// we need to announce the key as described in XEP-027
-						announcePgp(mSelectedConversation.getAccount(), null, onOpenPGPKeyPublished);
+						announcePgp(mSelectedConversation.getAccount(), null, null, onOpenPGPKeyPublished);
 					} else {
 						choosePgpSignId(mSelectedConversation.getAccount());
 					}
@@ -1427,7 +1440,7 @@ public class ConversationActivity extends XmppActivity
 				}
 			} else if (requestCode == REQUEST_ANNOUNCE_PGP) {
 				if (xmppConnectionServiceBound) {
-					announcePgp(mSelectedConversation.getAccount(), mSelectedConversation, onOpenPGPKeyPublished);
+					announcePgp(mSelectedConversation.getAccount(), mSelectedConversation,data, onOpenPGPKeyPublished);
 					this.mPostponedActivityResult = null;
 				} else {
 					this.mPostponedActivityResult = new Pair<>(requestCode, data);
@@ -1491,7 +1504,7 @@ public class ConversationActivity extends XmppActivity
 					this.mPendingGeoUri = null;
 				}
 			} else if (requestCode == REQUEST_TRUST_KEYS_TEXT || requestCode == REQUEST_TRUST_KEYS_MENU) {
-				this.forbidProcessingPendings = !xmppConnectionServiceBound;
+				this.forbidProcessingPendings = true;
 				if (xmppConnectionServiceBound) {
 					mConversationFragment.onActivityResult(requestCode, resultCode, data);
 					this.mPostponedActivityResult = null;
@@ -1517,14 +1530,19 @@ public class ConversationActivity extends XmppActivity
 		return connection == null ? -1 : connection.getFeatures().getMaxHttpUploadSize();
 	}
 
+	private String getBatteryOptimizationPreferenceKey() {
+		@SuppressLint("HardwareIds") String device = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+		return "show_battery_optimization"+(device == null ? "" : device);
+	}
+
 	private void setNeverAskForBatteryOptimizationsAgain() {
-		getPreferences().edit().putBoolean("show_battery_optimization", false).apply();
+		getPreferences().edit().putBoolean(getBatteryOptimizationPreferenceKey(), false).apply();
 	}
 
 	private void openBatteryOptimizationDialogIfNeeded() {
 		if (hasAccountWithoutPush()
 				&& isOptimizingBattery()
-				&& getPreferences().getBoolean("show_battery_optimization", true)) {
+				&& getPreferences().getBoolean(getBatteryOptimizationPreferenceKey(), true)) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.battery_optimizations_enabled);
 			builder.setMessage(R.string.battery_optimizations_enabled_dialog);
@@ -1557,8 +1575,7 @@ public class ConversationActivity extends XmppActivity
 
 	private boolean hasAccountWithoutPush() {
 		for(Account account : xmppConnectionService.getAccounts()) {
-			if (account.getStatus() != Account.State.DISABLED
-					&& !xmppConnectionService.getPushManagementService().availableAndUseful(account)) {
+			if (account.getStatus() == Account.State.ONLINE && !xmppConnectionService.getPushManagementService().available(account)) {
 				return true;
 			}
 		}
@@ -1594,6 +1611,7 @@ public class ConversationActivity extends XmppActivity
 		}
 		final Toast prepareFileToast = Toast.makeText(getApplicationContext(),getText(R.string.preparing_file), Toast.LENGTH_LONG);
 		prepareFileToast.show();
+		delegateUriPermissionsToService(uri);
 		xmppConnectionService.attachFileToConversation(conversation, uri, new UiInformableCallback<Message>() {
 			@Override
 			public void inform(final String text) {
@@ -1647,6 +1665,7 @@ public class ConversationActivity extends XmppActivity
 		}
 		final Toast prepareFileToast = Toast.makeText(getApplicationContext(),getText(R.string.preparing_image), Toast.LENGTH_LONG);
 		prepareFileToast.show();
+		delegateUriPermissionsToService(uri);
 		xmppConnectionService.attachImageToConversation(conversation, uri,
 				new UiCallback<Message>() {
 

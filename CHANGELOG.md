@@ -1,5 +1,40 @@
 # Changelog
 
+### Version 1.23.4
+* keep screen on while playing audio
+* send delivery receipts after MAM catch-up
+* reduce number of wake locks
+
+### Version 1.23.3
+* Fixed OMEMO device list not being announced
+
+### Version 1.23.2
+* Removed NFC support
+* upload Avatars as JPEG
+* reduce APK size
+
+### Version 1.23.1
+* Show icon instead of image preview in conversation overview
+* fixed loop when trying to decrypt with YubiKey
+
+### Version 1.23.0
+* Support for read markers in private, non-anonymous group chats
+
+### Version 1.22.1
+* Disable swipe to left to end conversation
+* Fixed 'No permission to access …' when opening files shared from the SD card
+* Always open URLs in new tab
+
+### Version 1.22.0
+* Text markup *bold*, _italic_,`monospace` and ~strikethrough~
+* Use same emoji style on all Android versions
+* Display emojis slightly larger within continuous text
+
+### Version 1.21.0
+* Inline player for audio messages
+* Stronger compression for long videos
+* Long press the 'add back' button to show block menu
+
 ### Version 1.20.1
 * fixed OTR encrypted file transfer
 
