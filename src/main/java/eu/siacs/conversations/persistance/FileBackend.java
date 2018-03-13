@@ -44,6 +44,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -69,6 +70,8 @@ public class FileBackend {
 	public static final String FILE_PROVIDER = ".files";
 
 	private XmppConnectionService mXmppConnectionService;
+
+	private static final List<String> BLACKLISTED_PATH_ELEMENTS = Arrays.asList("org.mozilla.firefox");
 
 	public FileBackend(XmppConnectionService service) {
 		this.mXmppConnectionService = service;
@@ -233,9 +236,12 @@ public class FileBackend {
 		return result;
 	}
 
+
+
+
 	public boolean useImageAsIs(Uri uri) {
 		String path = getOriginalPath(uri);
-		if (path == null) {
+		if (path == null || isPathBlacklisted(path)) {
 			return false;
 		}
 		File file = new File(path);
@@ -254,6 +260,15 @@ public class FileBackend {
 		} catch (FileNotFoundException e) {
 			return false;
 		}
+	}
+
+	public static boolean isPathBlacklisted(String path) {
+		for(String element : BLACKLISTED_PATH_ELEMENTS) {
+			if (path.contains(element)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public String getOriginalPath(Uri uri) {
@@ -296,10 +311,10 @@ public class FileBackend {
 		}
 	}
 
-	public void copyFileToPrivateStorage(Message message, Uri uri) throws FileCopyException {
-		String mime = MimeUtils.guessMimeTypeFromUri(mXmppConnectionService, uri);
+	public void copyFileToPrivateStorage(Message message, Uri uri, String type) throws FileCopyException {
+		String mime = type != null ? type : MimeUtils.guessMimeTypeFromUri(mXmppConnectionService, uri);
 		Log.d(Config.LOGTAG, "copy " + uri.toString() + " to private storage (mime=" + mime + ")");
-		String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+		String extension = MimeUtils.guessExtensionFromMimeType(mime);
 		if (extension == null) {
 			extension = getExtensionFromUri(uri);
 		}
@@ -955,6 +970,10 @@ public class FileBackend {
 	private static class NotAVideoFile extends Exception {
 		public NotAVideoFile(Throwable t) {
 			super(t);
+		}
+
+		public NotAVideoFile() {
+			super();
 		}
 	}
 
