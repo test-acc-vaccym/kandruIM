@@ -281,41 +281,6 @@
 	<string name="pref_expert_options_summary">Please be careful with these</string>
 	<string name="title_activity_about">About KandruIM</string>
 	<string name="pref_about_conversations_summary">Build and licensing information</string>
-<<<<<<< HEAD
-	<string name="pref_about_message" translatable="false">
-			KandruIM • Open Source XMPP Messenger inspired by siacs (https://github.com/siacs)
-			\n\nFork by Karl-Martin Minkner (https://github.com/kandru)
-			\n\nOriginal Copyright © 2014-2018 Daniel Gultsch
-			\n\nThis program is free software: you can redistribute it and/or modify
-			it under the terms of the GNU General Public License as published by
-			the Free Software Foundation, either version 3 of the License, or
-			(at your option) any later version.
-			\n\nThis program is distributed in the hope that it will be useful,
-			but WITHOUT ANY WARRANTY; without even the implied warranty of
-			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-			GNU General Public License for more details.
-			\n\nYou should have received a copy of the GNU General Public License
-			along with this program. If not, see https://www.gnu.org/licenses
-			\n\nDownload the full source code at https://github.com/siacs/Conversations
-			\n\n\nLibraries
-			\n\nhttps://www.bouncycastle.org\n(The MIT License (MIT))
-			\n\nhttps://www.gnu.org/software/libidn\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/ge0rg/MemorizingTrustManager\n(The MIT License (MIT))
-			\n\nhttps://github.com/rtreffer/minidns\n(WTFPL)
-			\n\nhttps://github.com/open-keychain/openkeychain-api-lib\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/jitsi/otr4j\n(LGPL-3.0)
-			\n\nhttps://developer.android.com/tools/support-library\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/zxing/zxing\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/google/material-design-icons\n(CC BY 4.0)
-			\n\nhttps://github.com/timroes/EnhancedListView\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/leolin310148/ShortcutBadger\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/kyleduo/SwitchButton\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/WhisperSystems/libaxolotl-java\n(GPLv3)
-			\n\nhttps://github.com/vinc3m1/RoundedImageView\n(Apache License, Version 2.0)
-			\n\nhttps://github.com/jdamcd/android-crop\n(Apache License, Version 2.0)
-	</string>
-=======
->>>>>>> upstream/master
 	<string name="title_pref_quiet_hours">Quiet Hours</string>
 	<string name="title_pref_quiet_hours_start_time">Start time</string>
 	<string name="title_pref_quiet_hours_end_time">End time</string>
@@ -560,12 +525,8 @@
 	<string name="shared_image_with_x">Shared image with %s</string>
 	<string name="shared_images_with_x">Shared images with %s</string>
 	<string name="shared_text_with_x">Shared text with %s</string>
-<<<<<<< HEAD
-	<string name="no_storage_permission">KandruIM need access to external storage</string>
-=======
 	<string name="no_storage_permission">Conversations needs access to external storage</string>
 	<string name="no_camera_permission">Conversations needs access to the camera</string>
->>>>>>> upstream/master
 	<string name="sync_with_contacts">Synchronize with contacts</string>
 	<string name="sync_with_contacts_long">KandruIM wants to match your XMPP roster with your contacts to show their full names and avatars.\n\nKandruIM will only read your contacts and match them locally without uploading them to your server.\n\nYou will now be asked to grant permission to access your contacts.</string>
 	<string name="certificate_information">Certificate Information</string>
@@ -599,15 +560,9 @@
 	<string name="security_error_invalid_file_access">Security error: Invalid file access</string>
 	<string name="no_application_to_share_uri">No application found to share URI</string>
 	<string name="share_uri_with">Share URI with…</string>
-<<<<<<< HEAD
-	<string translatable="false" name="welcome_header">Join us now!</string>
-	<string name="welcome_text">XMPP is a provider independent protocol. You can use this client with what ever XMPP server you choose.\nHowever for your convenience we made it easy to create an account on kandru.de; a provider specially suited for the use with kandruIM.</string>
-	<string name="magic_create_text">We will guide you through the process of creating an account on kandru.de.¹\nWhen picking kandru.de as a provider you will be able to communicate with users of other providers by giving them your full Jabber ID.</string>
-=======
 	<string translatable="false" name="welcome_header">Join the Conversation</string>
-	<string name="welcome_text">Jabber is a provider independent instant messaging network. You can use this client with what ever Jabber server you choose.\nHowever for your convenience we made it easy to create an account on conversations.im¹; a provider specially suited for the use with Conversations.</string>
-	<string name="magic_create_text">We will guide you through the process of creating an account on conversations.im.¹\nWhen picking conversations.im as a provider you will be able to communicate with users of other providers by giving them your full Jabber ID.</string>
->>>>>>> upstream/master
+	<string name="welcome_text">Jabber is a provider independent instant messaging network. You can use this client with what ever Jabber server you choose.\nHowever for your convenience we made it easy to create an account on kandru.de¹; a provider specially suited for the use with Conversations.</string>
+	<string name="magic_create_text">We will guide you through the process of creating an account on kandru.de.¹\nWhen picking kandru.de as a provider you will be able to communicate with users of other providers by giving them your full Jabber ID.</string>
 	<string name="your_full_jid_will_be">Your full Jabber ID will be: %s</string>
 	<string name="create_account">Create Account</string>
 	<string name="use_own_provider">Use existing Account</string>

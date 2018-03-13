@@ -556,13 +556,8 @@
   <string name="security_error_invalid_file_access">Sicherheitsfehler: Dateizugriff nicht erlaubt</string>
   <string name="no_application_to_share_uri">Keine Anwendung zum Teilen der URI gefunden</string>
   <string name="share_uri_with">Teile URI mit…</string>
-<<<<<<< HEAD
-  <string name="welcome_text">XMPP ist ein providerunabhängiges Protokoll. Du kannst diesen Client mit jedem beliebigen XMPP-Server benutzen.\nUm es dir leicht zu machen haben wir die Möglichkeit geschaffen, ein Konto auf kandru.de anzulegen. Dieser Provider ist besonders gut für kandruIM geeignet.</string>
-  <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf kandru.de.¹\nWenn du kandru.de als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
-=======
   <string name="welcome_text">Jabber ist ein anbieterunabhängiges Instant Messaging Netzwerk. Du kannst diesen Client mit jedem beliebigen Jabber-Server nutzen.\nUm es dir leicht zu machen, haben wir die Möglichkeit geschaffen, ein Konto auf conversations.im¹ anzulegen; ein Anbieter, der speziell für die Verwendung mit Conversations geeignet ist.</string>
-  <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf conversations.im.¹\nWenn du conversations.im als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
->>>>>>> upstream/master
+  <string name="magic_create_text">Wir führen dich durch den Prozess der Kontoerstellung auf kandru.de.¹\nWenn du kandru.de als Provider wählst, kannst du mit Nutzern anderer Anbieter kommunizieren, indem du ihnen deine vollständige Jabber-ID gibst.</string>
   <string name="your_full_jid_will_be">Deine vollständige Jabber ID lautet: %s</string>
   <string name="create_account">Konto erstellen</string>
   <string name="use_own_provider">Benutze existierendes Konto</string>
