@@ -51,12 +51,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-<<<<<<< HEAD
-import net.java.otr4j.session.SessionStatus;
-
-import java.text.SimpleDateFormat;
-=======
->>>>>>> upstream/master
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -8,11 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-<<<<<<< HEAD
-import java.io.File;
-import java.security.interfaces.DSAPublicKey;
-=======
->>>>>>> upstream/master
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
