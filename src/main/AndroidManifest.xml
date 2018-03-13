@@ -192,20 +192,9 @@
             </intent-filter>
         </activity>
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
-<<<<<<< HEAD
-        <activity
-            android:name=".ui.RecordingActivity"
-            android:label="@string/voice_recorder"
-            android:configChanges="orientation|screenSize">
-            <intent-filter>
-                <action android:name="android.provider.MediaStore.RECORD_SOUND" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-=======
+
         <activity android:name=".ui.MemorizingActivity"/>
 
->>>>>>> upstream/master
         <service android:name=".services.ExportLogsService" />
         <service
             android:name=".services.ContactChooserTargetService"
