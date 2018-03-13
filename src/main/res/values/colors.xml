@@ -38,11 +38,6 @@
 	<!-- soundrecorder plugin end -->
 	<color name="unreadcountlight">#ff4b9b4a</color>
 	<color name="unreadcountdark">#ff326130</color>
-<<<<<<< HEAD
-	<color name="datetagtextcolor">#ffd68000</color>
-=======
-
 	<!-- scanner -->
 	<color name="scan_result_dots">#c04CAF50</color>
->>>>>>> upstream/master
 </resources>

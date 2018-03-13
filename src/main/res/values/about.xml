@@ -30,6 +30,7 @@
 
 <resources>
     <string name="pref_about_message" translatable="false">
+    		Fork of Conversations. Project on github: https://github.com/kandru/kandruim \n\n
 			Conversations • the very last word in instant messaging.
 			\n\nCopyright © 2014-2018 Daniel Gultsch
 			\n\nThis program is free software: you can redistribute it and/or modify
