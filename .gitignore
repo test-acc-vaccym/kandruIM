@@ -44,3 +44,5 @@ import-summary.txt
 .navigation/
 CHANGELOG.md
 README.md
+src/.DS_Store
+.DS_Store
