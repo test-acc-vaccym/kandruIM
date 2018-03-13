@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import eu.siacs.conversations.Config;
 import eu.siacs.conversations.crypto.PgpDecryptionService;
 import eu.siacs.conversations.crypto.axolotl.AxolotlService;
-import eu.siacs.conversations.persistance.FileBackend;
 import eu.siacs.conversations.xmpp.chatstate.ChatState;
 import eu.siacs.conversations.xmpp.mam.MamReference;
 import rocks.xmpp.addr.Jid;
@@ -158,14 +157,8 @@ public class Conversation extends AbstractEntity implements Blockable, Comparabl
 		return null;
 	}
 
-	public void clearMessages(FileBackend fileBackend) {
+	public void clearMessages() {
 		synchronized (this.messages) {
-            for (final Message message : this.messages) {
-                if(message.isFileOrImage()) {
-                        File file = fileBackend.getFile(message);
-                        file.delete();
-                    }
-            }
 			this.messages.clear();
 		}
 	}
