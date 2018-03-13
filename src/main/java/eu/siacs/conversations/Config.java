@@ -33,7 +33,7 @@ public final class Config {
 
 	public static final String LOGTAG = "kandruIM";
 
-	public static final Jid BUG_REPORTS = Jid.of("bugs@kandru.de);
+	public static final Jid BUG_REPORTS = Jid.of("bugs@kandru.de");
 
 	public static final String DOMAIN_LOCK = null; //only allow account creation for this domain
 	public static final String MAGIC_CREATE_DOMAIN = "kandru.de";
