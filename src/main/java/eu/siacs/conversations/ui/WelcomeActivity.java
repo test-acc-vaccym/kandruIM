@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 
 import java.util.List;
+import android.net.Uri;
 
 import eu.siacs.conversations.R;
 import eu.siacs.conversations.entities.Account;
