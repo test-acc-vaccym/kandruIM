@@ -1,5 +1,26 @@
 # Changelog
 
+### Version 2.0.0
+* OMEMO by default for everything but public group chats
+* Integrate QR code scanner (requires camera permission)
+* Removed support for OTR
+* Removed support for customizable resources
+* Removed slide out panel for conversation overview
+* Add ability to change status message
+* Highlight irregular unicode code blocks in Jabber IDs
+
+### Version 1.23.8
+* bug fixes
+
+### Version 1.23.7
+* Improved MAM support + bug fixes
+
+### Version 1.23.6
+* Fixed crash on receiving invalid HTTP slot response
+
+### Version 1.23.5
+* improved self chat
+
 ### Version 1.23.4
 * keep screen on while playing audio
 * send delivery receipts after MAM catch-up
